@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <meta name="description" content="" />
+        <meta name="author" content="" />
+        <title>Lab3 - Lanyue Fang's Fast Robots</title>
+        <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
+        <!-- Font Awesome icons (free version)-->
+        <script src="https://use.fontawesome.com/releases/v5.15.4/js/all.js" crossorigin="anonymous"></script>
+        <!-- Google fonts-->
+        <link href="https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic" rel="stylesheet" type="text/css" />
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" rel="stylesheet" type="text/css" />
+        <!-- Core theme CSS (includes Bootstrap)-->
+        <link href="css/styles.css" rel="stylesheet" />
+    </head>
+    <body>
+        <!-- Navigation-->
+        <nav class="navbar navbar-expand-lg navbar-light" id="mainNav">
+            <div class="container px-4 px-lg-5">
+                <a class="navbar-brand" href="index.html">ECE5960 FAST ROBOTS</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+                    Menu
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarResponsive">
+                    <ul class="navbar-nav ms-auto py-4 py-lg-0">
+                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="index.html">Home</a></li>
+                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="about.html">About Me</a></li>
+                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="5960-Lab2.html">Previous</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+        <!-- Page Header-->
+        <header class="masthead" style="background-image: url('assets/img/post-bg.jpg')">
+            <div class="container position-relative px-4 px-lg-5">
+                <div class="row gx-4 gx-lg-5 justify-content-center">
+                    <div class="col-md-10 col-lg-8 col-xl-7">
+                        <div class="post-heading">
+                            <h1>Lab 3: Time-of-Flight Sensors (ToF) and the Inertial Measurement Unit (IMU)</h1>
+                            <h2 class="subheading">Equip the robot with sensors - the faster the robot can sample and the more it can trust a sensor reading, the faster it is able to drive. </h2>
+                            <p class="post-meta">
+                                Posted by
+                                <a href="about.html">Lanyue Fang</a>
+                                on Feb 21, 2022
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+        <!-- Post Content-->
+        <article class="mb-4">
+            <div class="container px-4 px-lg-5">
+                <div class="row gx-4 gx-lg-5 justify-content-center">
+                    <div class="col-md-10 col-lg-8 col-xl-7">
+
+                        <h2 class="section-heading">Parts Required</h2>
+                        <p>
+                            1 x SparkFun RedBoard Artemis Nano<br>
+                            1 x USB cable<br>
+                            2 x 4m ToF sensor<br>
+                            1 x 9DOF IMU sensor<br>
+                            1 x Qwiic connector<br>
+                            1 x Ruler or graph paper<br>
+                        </p>
+
+
+                        <h2 class="section-heading">Lab 3(a): Time of Flight Sensors</h2>
+                        <p>
+                        <h3>I2C Address</h3>
+
+                            To detect the I2C address of the ToF sensor, I attached it with the Qwiic connection (SDA/SCL2)
+                            and uploaded the Example 'Wire_I2C' to the Artemis board.
+                            Port 0x10000E9C detected the ToF sensor, and the I2C address is 0x29[1].
+                            I noticed that in some manuals the I2C address is 0x52(Binary:01010010), while in other guidance it is 0x29(Binary:0101001).
+                            They are both correct. Adding a '0' at the end of the 0x29 to make it become a byte, we get the 0x52.
+                            <p><img class="img-fluid" src="assets/img/Lab3/ToF_I2Caddress.PNG"></p>
+                            
+                        </p>
+                        
+                        <p><h3>Distance Mode</h3>
+                            The ToF sensor has three modes, that optimize the ranging performance given the maximum expected range.
+                            Long distance mode can detect obstacles as far as 4m in the dark situation.
+                            However, it will be impacted by the ambient light a lot.
+                            Short distance mode is more immune to ambient light while the maximum ranging distance is limited to 1.3m[1].
+                            <p><img class="img-fluid" src="assets/img/Lab3/distance_mode.PNG"></p>
+                            Given that we would test the robot with the light in general and I don't have a very long ruler, I chose to perform the following tests with short distance mode .
+                            However, if the robot is going to move pretty fast, I will change it to be long distance mode.
+                     
+
+                        </p>
+                        <p><h3>ToF sensor Range, Accuracy, Repeatability, Ranging time</h3>
+                            I set the ToF sensor to be in short distance mode and used the 'testToF.ino' to do the measurement.
+                            I calculated the average distance and standard deviation of the 100 measurements, which are going to tell the accuracy and repeatability of the sensor.
+                            First, I used a white box as an obstacle and put it at 200mm, 400mm, 600mm, 800mm, 1000mm, 1300mm to get the measured distance.
+                            I also compared the result with the lights on and off. Here are the results. 
+                            The error increases when the distance becomes longer.
+                            Turning on or off light doesn't influence a lot for the short distance mode.
+                            <p><img class="img-fluid" src="assets/img/Lab3/ToF01.PNG"></p>
+                            
+                            I used cardboard, wooden, and foam as different textures of the obstacles and found the results were very different.
+                            The distance got from the wooden board seemed to be more accurate under 600mm compared to the other two textures.
+                            Additionally, when the obstacle is foam, the distance detected by the ToF sensor would be longer.
+                            However, in long distance, the accuracy of the three is not high.
+                            <p><img class="img-fluid" src="assets/img/Lab3/ToF02.PNG"></p>
+
+                            I changed the color of the obstacle. We can tell from the results that color has a smaller impact on accuracy.
+                            <p><img class="img-fluid" src="assets/img/Lab3/ToF03.PNG"></p>
+
+                            The measurement frequency is around 10.16Hz, or 98.43ms. This is the same as the default inter-measurement period, 100ms. 
+
+                            Here is the demo video.
+                            <div style="text-align: center;">
+                                <iframe width="560" height="315" src="https://www.youtube.com/embed/qBBJCQLq8f8" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                            </div>
+
+                        </p>
+
+                        <p><h3>Two ToF Sensors</h3>
+                            I2C only allows one address-per-device. However, the default I2C addresses of identical ToF sensors are the same.
+                            Fortunately, we can change the addresses in software during initialization with the help of XSHUT pins[2].
+                            I connected the XSHUT pins to A15, A16 pins on the Artemis board separately, which should be in the OUTPUT Mode.
+                            <pre><code>
+pinMode(15,OUTPUT); //sensor#1 XSHUT
+pinMode(16,OUTPUT); //sensor#2 XSHUT
+                            </code></pre>
+                            When XSHUT pins are set to low, sensors will be shutdown.
+                            When XSHUT pins are in high, they will be activated.
+                            When dealing with several sensors, we should initialize them one by one and give them different I2C addresses.
+                            In this lab, I firstly shutdown the two sensors.
+                            Then, the XSHUT pin of sensor #1 is set to high and setI2CAddress(0x30) is called to give it a new I2C address.
+                            After that, sensor #2 is going to be activated and initialized.
+                            <pre>
+                                <code>
+  // Reset all sensors, 
+  digitalWrite(15,LOW); digitalWrite(16,LOW);
+  delay(10);
+  digitalWrite(15,HIGH); digitalWrite(16,HIGH); // bring out of reset
+
+  //Begin sensor#1, XSHUT HIGH
+  digitalWrite(16,LOW); //keep #1 awake(XSHUT pin HIGH), others shutdown(XSHUT pin LOW)
+  distanceSensor1.setI2CAddress(0x30); //change the I2C address
+  if (distanceSensor1.begin() != 0) //Begin returns 0 on a good init
+  {
+    Serial.println("Sensor1j failed to begin. Please check wiring. Freezing...");
+    while (1)
+      ;
+  }
+
+  //Keep sensor#1 awake, and bring sensor#2 out of reset
+  digitalWrite(16,HIGH);
+  if (distanceSensor2.begin() != 0) //Begin returns 0 on a good init
+  {
+    Serial.println("Sensor2 failed to begin. Please check wiring. Freezing...");
+    while (1)
+      ;
+  }
+
+  Serial.println("Sensors online!");
+
+                                </code>
+                            </pre>
+                            
+                            In the main loop, two sensors will start rangeing and get distances separately.
+                            
+                            Here is the demo video.
+                            <p>
+                                <iframe width="560" height="315" src="https://www.youtube.com/embed/NX2W_saAoKQ" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                            </p>
+                            
+   
+
+                        </p>
+
+                        
+                        <p><h3>Distance Sensor Comparation</h3>
+                            Many distance sensors are based on infrared transmissions, such as Amplitude, IR triangulation, IR Time of Flight[3].<br>
+                            <p></p>
+                            An Amplitude Distance Sensor contains an IR LED transmitting the light and a Photo Diode detecting the reflected light.
+                            The measurement distance is less than 10cm. Amplitude Distance Sensors are very cheap and easy to use. 
+                            However, it is sensitive to surface color, texture, and ambient light.
+                            <p></p>
+                            Triangulation has very simple circuitry and is less sensitive to color, texture, and ambient light.
+                            The medium-range is 0.05-1m. However, this kind of sensor has a low sample rate (around 2Hz) and still cannot work in high ambient light.
+                            Additionally, triangulation is bulky.
+                            <p></p>
+                            As for the ToF sensor, it is mostly insensitive to color, texture, and ambient light and owns a high sample rate (4KHz).
+                            However, the sampling frequency (7-30Hz) is low and the processing is more complicated.
+                        
+                        </p>
+
+
+
+                        <p><h3>Timing Budget</h3>
+                            The timing budget is the time required by the sensor to perform one range measurement, 
+                            while the inter-measurement period is the delay between two ranging operations and should be equal or larger than the timing budget.
+                            I looked up the manual and it recommends 20, 33, and 100 ms for short, medium and long distance modes respectively[1].
+                            Frequency and accuracy are a trade-off: the longer the inter-measurement period, the more accurate the result will be.
+                            Given that the robot will move fast, I will choose to sacrifice accuracy. So I decided to set the timing budget and inter-measurement period to be 20.
+
+                            
+                        </p>
+
+
+                        <p><h3>Sensor Status</h3>
+                            The ToF sensor has two parameters, signal and sigma, that tell whether the measurement is valid or not.
+                            Sigma is the estimation of the standard deviation of the measurement, and the signal represents the amplitude of the signal
+                            reflected from the target and detected by the device.
+                            If both of them are outside the limits, the ranging is will be regarded as invalid[1].<br>
+                            <br>
+                            I tried to move the box really fast, but the sensor worked pretty well. I didn't find any data is invalid.
+                            Then I put my hand right in front of the sensor and then move away quickly to simulate the dramatic change in distance.
+                            A few measurements failed because the signal is out of range.
+                            <p><img class="img-fluid" src="assets/img/Lab3/ToF_Status.PNG"></p>
+                            If such a situation happened when the robot is moving fast, it may not have enough time to stop or swerve to avoid a collision.
+                            Therefore, I plan to make the robot stop immediately when ToF sensors fail in measurement.
+                        
+                        </p>
+
+
+
+
+
+                        <h2 class="section-heading">Lab 3(b): IMU</h2>
+                        <p><h3>I2C Address</h3>
+                            I attached the IMU's SDA, SCL with the SDA3, SCL3 in the Artemis board and run the 'Wire_I2C' example.
+                            Port 0x10001190 detected the IMU module, and the I2C address is 0x68, which is the same as the address written in the datasheet[4].
+                            <p><img class="img-fluid" src="assets/img/Lab3/ToF_I2Caddress.PNG"></p>
+                        </p>
+
+                        <p><h3>AD0_VAL</h3>
+                            AD0_VAL is the value of the last bit of the I2C address.
+                            In the IMU 20948, the ADR jumper is closed. Therefore, we should set it to be 0. 
+                            Otherwise, the sensor will fail in initialization.
+                        </p>
+                        <p><h3>Sensor Values as rotate, flip and accelerate the board</h3>
+                            From the IMU sensor, we can get the Tri-axial accelerations, angular velocities, Magnetic field intensities.
+                            When the sensor stays still, the angular velocities from the gyroscope are nearly zero. 
+                            ax, ay is also around zero, while az is 973mg on average, the earth's gravitational acceleration.
+                            When flipping down the sensor, az will become negative.
+                            As for rotation, angular velocities will change a lot.
+                            Here is the demo video.
+                            <p>
+                            <iframe width="560" height="315" src="https://www.youtube.com/embed/2Bw-f-XZKnA" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>  
+                            </p>
+                        </p>
+
+                        <p><h3>Calculate Pitch and Roll from the Accelerometer Data</h3>
+                            Roll, pitch and roll are the angles of rotation around the xyz axis, respectively.
+                            According to the following equations, I can calculate the pitch and roll based on the accelerations:
+                            <br>
+                            pitch = ax / az<br>
+                            roll = ay /az<br>
+                            After that, I map the angle to [-90, 90] degrees with the following code.
+                            <pre>
+                                <code>
+  ax=sensor->accX();
+  ay=sensor->accY();
+  az=sensor->accZ();
+
+  pitch=atan2(ax,az);pitch=pitch*180/M_PI;
+  roll=atan2(ay,az);roll=roll*180/M_PI;
+
+  if(abs(pitch)>90){ //change the range to be [-90,90]
+    pitch=(pitch/abs(pitch))*180-pitch;
+  }
+  if(abs(roll)>90){
+    roll=(roll/abs(roll))*180-roll;
+  }
+                                </code>
+                            </pre>
+                            When I put the sensor on a flat surface, the output pitch and roll were 0.54, -1.33 separately.
+                            When I lined up the sensor against a wall, the pitch was 88.42 and the roll was 88.40.
+                            Therefore, I calibrated the pitch and roll with the following equations.
+                            <br>
+                            pitch_calibrated = 1.0117 * pitch + 0.5463<br>
+                            roll_calibrated = 1.0030 * roll + 1.3340
+                            <br>
+                  
+                        </p>
+                        
+                        <p><h3>Try Tapping the Sensor and Plot the Frequency Response</h3>
+                            When tapping the IMU sensor, I found there will be some spikes, which are unwanted noise.
+                            <p><img class="img-fluid" src="assets/img/Lab3/IMU_pitch00_time.jpg"></p>
+                            Here is a time domain figure. In 2-4s, I slowly changed the pitch. After that, I tapped the sensor several times.
+                            <br>
+                            I used Matlab to transfer it in to the frequency domain.
+                            <p><img class="img-fluid" src="assets/img/Lab3/IMU_pitch00_frequency_fftshift.jpg"></p>
+                            There are some high frequency spikes in 5-10Hz.
+                            So I chose to use a 5Hz cut-off frequency as the Professor suggessed.
+                            Therefore the RC = 1 / (2*pi*f) = 1 / (2*pi*5) =0.0318. 
+                            Given that my sampling period is 30ms, alpha is T / (T+RC) =0.4854.
+                            <p></p>
+                            I noticed that the angle values will jitter due to the uncorrelated noise. 
+                            Therefore, I tried to average every 5 angles and regraded it as the new output.
+                            Here are the results. Red represents raw pitch data. Orange stands for the average output. Blue is the pitch data after the complementary filter.
+                            <p><img class="img-fluid" src="assets/img/Lab3/IMU_tapping_seperatepng.png"></p>
+                            The averaged output seems to be the most robust one. However, it has some time lag.
+                            The low pass filter can reduce the influence of tapping but can not remove it totally. 
+                            Related code is attached below.
+                            <pre><code>
+
+  float alpha=0.4854;
+
+  pitch_new=alpha*pitch+(1-alpha)*pitch_old;
+  roll_new=alpha*roll+(1-alpha)*roll_old;
+  
+  pitch_old=pitch_new;
+  roll_old=roll_new;
+
+                            </code></pre>
+              
+                        </p>
+
+                        <p><h3>Compute Pitch, Roll, and Yaw from the Gyroscope</h3>
+                            Gyroscope gives the angular velosities. By integrating, we can get the tilt angles.
+                            <pre>
+                                <code>
+    wx=sensor->gyrX();
+    wy=sensor->gyrY();
+    wz=sensor->gyrZ();
+
+    long time_current;
+    time_current=millis();
+    float dt;
+    dt=(float)(time_current-time_previous)*0.001;
+    time_previous=time_current;
+    
+    pitch_gyro=pitch_gyro-wy*dt;
+    roll_gyro=roll_gyro+wx*dt;
+    yaw_gyro=yaw_gyro+wz*dt;
+
+                                </code>
+                            </pre>
+                            Angular values obtained by gyroscope are less noisy compared to the ones get by the accelerometer, but they are going to drift with time.
+                            In addition, when the sampling frequency decreases, the accuracy decreases.
+                            This is because when calculating the current tilt angles by integrating the angular velocities, we assume that the angular velosities don't change during the sampling period.
+                            Here is the demo video.
+                            <p>
+                                <iframe width="560" height="315" src="https://www.youtube.com/embed/9Uw9Q45TTTE" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                            </p>
+                        
+                        </p>
+
+                        <p><h3>Sensor Fusion</h3>
+                            Given that the gyroscope drifts a lot, I would like to trust more on the accelerometer.
+                            I chose the alpha here to be 0.8.
+                            <pre><code>
+alpha=0.8;
+pitch=pitch_gyro*(1-alpha)+pitch_acceler*alpha;
+roll=roll_gyro*(1-alpha)+roll_acceler*alpha;
+                            </code></pre>
+                            Here is the result. Red, orange and gray lines stand for the roll value calculated from the accelerometer, gyroscope and the fusion of the two sensors.
+                            
+                            <p><img class="img-fluid" src="assets/img/Lab3/IMU_acc_gyro_0.8.png"></p>
+                        
+                        </p>
+
+
+                        <p><h3>Magnetometer</h3>
+                            According to the following equations, we will be able to know the xm, ym.
+                            <pre>
+xm = myICM.magX()*cos(pitch) - myICM.magY()*sin(roll)*sin(pitch) + myICM.magZ()*cos(roll)*sin(pitch); //these were saying theta=pitch and roll=phi 
+ym = myICM.magY()*cos(roll) + myICM.magZ()*sin(roll);
+                            </pre>
+
+                            In the demo video, I was facing geographically North and the x-axis of IMU sensor was pointing to north pole at the begining.
+                            xm and ym got the maximum value when x axis or y axis were pointing to the north pole of the magnetic field, which is geographically South.
+                            
+                            <p>
+                                <iframe width="560" height="315" src="https://www.youtube.com/embed/oboZH5kQ1L4" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                            </p>
+
+                            We can calculate the yaw by the xm, ym: yaw = atan2(ym/xm).
+                            I compared the yaw calculate by gyroscope and magnetometer respectively.
+                            Given that the gyro_yaw always starts at zero, there is a constant difference between the two values.
+                            The trend of yaw value from the magnetometer remains almost the same as the one from the gyroscope.
+                            However, magnetometer's yaw had larger noise and in some range and was not so accurate.
+                            All in all, I would not like to use the magnetometer in the further lab.
+                            <p><img class="img-fluid" src="assets/img/Lab3/IMU_mag_new.png"></p>
+                        
+
+                            
+                        
+                        </p>
+
+                        <h2 class="section-heading">Reference</h2>
+                        <p>
+                            [1]<a href="https://cdn.sparkfun.com/assets/8/9/9/a/6/VL53L0X_DS.pdf"> VL53L1X Datasheet.</a>
+                            <br>
+                            [2]<a href="https://learn.adafruit.com/adafruit-vl53l0x-micro-lidar-distance-sensor-breakout/arduino-code "> Connecting Multiple VL53L1X ToF Sensors.</a>
+                            <br>
+                            [3]<a href="https://canvas.cornell.edu/courses/39354/files/5270642?module_item_id=1391039"> FastRobots-3-Sensors, part I Lecture</a>
+                            <br>
+                            [4]<a href="https://media.digikey.com/pdf/Data%20Sheets/Pimoroni%20PDFs/PIM448_Web.pdf"> ICM20948 9DoF Motion Sensor Datasheet.</a>
+                            <br>
+                        </p>
+
+
+                        
+
+                        <p></p>
+
+                        <span class="caption text-muted">
+                            Posted by <a href="about.html">Lanyue Fang</a>
+                            on Feb 21, 2022
+                        </span>
+
+                        
+                       
+
+
+                    </div>
+                </div>
+            </div>
+        </article>
+        <!-- Footer-->
+        <footer class="border-top">
+            <div class="container px-4 px-lg-5">
+                <div class="row gx-4 gx-lg-5 justify-content-center">
+                    <div class="col-md-10 col-lg-8 col-xl-7">
+                        <div class="small text-center text-muted fst-italic">Copyright &copy; Lanyue Fang 2022</div>
+                    </div>
+                </div>
+            </div>
+        </footer>
+        <!-- Bootstrap core JS-->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+        <!-- Core theme JS-->
+        <script src="js/scripts.js"></script>
+    </body>
+</html>

@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <meta name="description" content="" />
+        <meta name="author" content="" />
+        <title>Lab4 - Lanyue Fang's Fast Robots</title>
+        <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
+        <!-- Font Awesome icons (free version)-->
+        <script src="https://use.fontawesome.com/releases/v5.15.4/js/all.js" crossorigin="anonymous"></script>
+        <!-- Google fonts-->
+        <link href="https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic" rel="stylesheet" type="text/css" />
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" rel="stylesheet" type="text/css" />
+        <!-- Core theme CSS (includes Bootstrap)-->
+        <link href="css/styles.css" rel="stylesheet" />
+    </head>
+    <body>
+        <!-- Navigation-->
+        <nav class="navbar navbar-expand-lg navbar-light" id="mainNav">
+            <div class="container px-4 px-lg-5">
+                <a class="navbar-brand" href="index.html">ECE5960 FAST ROBOTS</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+                    Menu
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarResponsive">
+                    <ul class="navbar-nav ms-auto py-4 py-lg-0">
+                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="index.html">Home</a></li>
+                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="about.html">About Me</a></li>
+                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="5960-Lab3.html">Previous</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+        <!-- Page Header-->
+        <header class="masthead" style="background-image: url('assets/img/Lab4/bg.jpg')">
+            <div class="container position-relative px-4 px-lg-5">
+                <div class="row gx-4 gx-lg-5 justify-content-center">
+                    <div class="col-md-10 col-lg-8 col-xl-7">
+                        <div class="post-heading">
+                            <h1>Lab 4: Characterize your car</h1>
+                            <h2 class="subheading">Know more about the car. </h2>
+                            <p class="post-meta">
+                                Posted by
+                                Lanyue Fang
+                                on Feb 21, 2022
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+        <!-- Post Content-->
+        <article class="mb-4">
+            <div class="container px-4 px-lg-5">
+                <div class="row gx-4 gx-lg-5 justify-content-center">
+                    <div class="col-md-10 col-lg-8 col-xl-7">
+
+                        
+                        <h2 class="section-heading">Category  A</h2>
+                        <p><h3>Basic Information</h3>
+                            Length: 18.0cm<br>
+                            Wedth: 14.5cm<br>
+                            Height: 8.0cm<br>
+                            Weight: 0.5kg<br>
+                            Wheel Radius: 4.4cm<br>
+                            Distance between Two Wheels: 10.0cm
+                            
+                        </p>
+
+                        <p><h3>Battery</h3>
+                            Chemistry: Li-Polymer<br>
+                            Capacity: 850mAh<br>
+                            Output Voltage: 3.7V<br>
+                            Weight: 19g/0.67oz<br>
+                            Size: 43.8*24.6*9.6mm<br>
+                            
+                            Battery Life:<br> The typical life expectancy of the LiPo Battery is less than 300 cycles[1,2]. 
+                            When people discharge them lower than 3.0V per cell, the battery life time will be shortened.
+                            In general, LiPos should be replaced after three to four years.
+                                                 
+
+                        </p>
+
+
+                        <h2 class="section-heading">Category B</h2>
+                        <p><h3>Acceleration Range</h3>
+                            My car will turn around when I remote control it to go straight, probably because one of the wheels is loose.
+                            I would like to express my gratitude to Priyam Patel. He lent me his car so that I could finish this part tests.<br>
+                            I taped the battery, Artemis board and the IMU sensor to the roof of the car.
+                            The x-axis of the sensor is facing directly in front of the car.
+                            Here is the picture.
+                            <p><img class="img-fluid" src="assets/img/Lab4/car_imu.jpg"></p>
+                            By making use of the Bluetooth and the notification handler, I was able to get the sensor data continously in my laptop.
+                            The Artemis board will send the measured ax every 30ms.
+                            To test the acceleration range, I kept pressing the forward button.
+                            We can learn from the figure below that the acceleration will not keep increasing all the time.
+                            Once it hits a limit, it will drop down so that the speed is in a certain range.
+                            The acceleration range is [-2000,2000]mg, that is [-2,2] * 9.8 m/s2 = [-19.6,19.6] m/s2.
+                            <p><img class="img-fluid" src="assets/img/Lab4/acceleration range.PNG"></p>
+                            Here is the demo video.
+                            <p>
+                                <iframe width="560" height="315" src="https://www.youtube.com/embed/9-wWCp0MW8Q" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                            </p>
+                            
+                        </p>
+
+                        <p><h3></h3></p>
+                        <p><h3>Speed Range</h3>
+                            I used a ToF sensor to test the speed range. 
+                            I tied the sensor and a piece of rubber together as shown in the picture, making sure it always faces forward.
+                            <p><img class="img-fluid" src="assets/img/Lab4/car_tof.jpg"></p>
+                            At first, I set the Artemis board to get the distance from ToF sensor every 1ms and send it to my laptop, 
+                            attempting to get more accurate measurements.
+                            It turned out the speed was 350m/s, which was impossible! 
+                            The reason was my interval period was too short. 
+                            Although the data transmission through Bluetooth is really fast 
+                            (I tested the interval to be 1ms or even lower, such as 0.001ms in Lab2, and it succeeded), the sensor cannot finish the measurement in 1ms.
+                            Timing budget should definitely be taken into account. 
+                            The manual recommends 20, 33, and 100 ms for short, medium and long distance modes respectively[3]. 
+                            Therefore, I added a 130ms delay time after every measurement. Here is the result.
+                            <p><img class="img-fluid" src="assets/img/Lab4/speed range01_distance.PNG"></p>
+                            <p><img class="img-fluid" src="assets/img/Lab4/speed range01_velocity.PNG"></p>
+                            The velocity will not always keep increasing. 
+                            Since the acceleration has the limitation and is back and forth between positive and negative, 
+                            car's velocity is not uniformly growing. 
+                            According to my experiments, the speed will not exceed 5m/s.
+
+
+
+
+
+                            
+                        </p>
+
+                        
+                        <h2 class="section-heading">Reference</h2>
+                       <p>
+                            [1]
+                           <a href="https://www.greenway-battery.com/news/LiPo-Battery-Life-Expectancy-Analysis-102.html">LiPo Battery Life Expectancy Analysis_Greenway battery.</a>
+                            <br>
+                            [2]<a href="https://www.thedronegirl.com/2020/05/24/lipo-batteries-last/">How long do LiPo batteries last and how do I know if an old battery is safe?</a>
+                            <br>
+                            [3]<a href="https://cdn.sparkfun.com/assets/8/9/9/a/6/VL53L0X_DS.pdf"> VL53L1X Datasheet.</a>
+                       </p>
+                        
+                       
+                        
+
+                        <p></p>
+
+                        <span class="caption text-muted">
+                            Posted by <a href="about.html">Lanyue Fang</a>
+                            on Feb 21, 2022
+                        </span>
+
+                        
+                       
+
+
+                    </div>
+                </div>
+            </div>
+        </article>
+        <!-- Footer-->
+        <footer class="border-top">
+            <div class="container px-4 px-lg-5">
+                <div class="row gx-4 gx-lg-5 justify-content-center">
+                    <div class="col-md-10 col-lg-8 col-xl-7">
+                        <div class="small text-center text-muted fst-italic">Copyright &copy; Lanyue Fang 2022</div>
+                    </div>
+                </div>
+            </div>
+        </footer>
+        <!-- Bootstrap core JS-->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+        <!-- Core theme JS-->
+        <script src="js/scripts.js"></script>
+    </body>
+</html>
