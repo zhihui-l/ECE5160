@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <meta name="description" content="" />
+        <meta name="author" content="" />
+        <title>Lab5 - Lanyue Fang's Fast Robots</title>
+        <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
+        <!-- Font Awesome icons (free version)-->
+        <script src="https://use.fontawesome.com/releases/v5.15.4/js/all.js" crossorigin="anonymous"></script>
+        <!-- Google fonts-->
+        <link href="https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic" rel="stylesheet" type="text/css" />
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" rel="stylesheet" type="text/css" />
+        <!-- Core theme CSS (includes Bootstrap)-->
+        <link href="css/styles.css" rel="stylesheet" />
+    </head>
+    <body>
+        <!-- Navigation-->
+        <nav class="navbar navbar-expand-lg navbar-light" id="mainNav">
+            <div class="container px-4 px-lg-5">
+                <a class="navbar-brand" href="index.html">ECE5960 FAST ROBOTS</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+                    Menu
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarResponsive">
+                    <ul class="navbar-nav ms-auto py-4 py-lg-0">
+                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="index.html">Home</a></li>
+                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="about.html">About Me</a></li>
+                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="5960-Lab4.html">Previous</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+        <!-- Page Header-->
+        <header class="masthead" style="background-image: url('assets/img/Lab5/bg.jpg')">
+            <div class="container position-relative px-4 px-lg-5">
+                <div class="row gx-4 gx-lg-5 justify-content-center">
+                    <div class="col-md-10 col-lg-8 col-xl-7">
+                        <div class="post-heading">
+                            <h1>Lab5 Open Loop Control</h1>
+                            <h2 class="subheading">Change from manual to open loop control of the car. </h2>
+                            <p class="post-meta">
+                                Posted by
+                                Lanyue Fang
+                                on Mar 7, 2022
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+        <!-- Post Content-->
+        <article class="mb-4">
+            <div class="container px-4 px-lg-5">
+                <div class="row gx-4 gx-lg-5 justify-content-center">
+                    <div class="col-md-10 col-lg-8 col-xl-7">
+
+                        
+                        <h2 class="section-heading">Parts Required</h2>
+                        <p>
+                            1 x R/C stunt car<br>
+                            1 x SparkFun RedBoard Artemis Nano<br>
+                            1 x USB cable<br>
+                            2 x Li-Ion 3.7V 400 mAh (or more) battery<br>
+                            2 x Dual motor driver<br>
+                        </p>
+
+
+
+                        <h2 class="section-heading">The Connection with Motor Driver</h2>
+                        <p>
+                            The operating voltage of the DRV8833 Dual Motor Driver ranges from 2.7V to 10.8V. 
+                            It can diver 1.2A per channel continuously to a pair of DC motors.[1] 
+                            In this lab, in order to make the motors more powerful, 
+                            we paralleled the motor inputs and outputs to deliver 2.4 A continuous (4 A peak) to a single motor. 
+                            The wire connection is shown in the following figure.
+                            <p><img class="img-fluid" src="assets/img/Lab5/Motor Driver02.png"></p>
+                            AIN1, AIN2 are logic input controls and PWM can be applied to them. 
+                            I used the analog pins on the Artemis board to generate the PWM signal. 
+                            A2, A3 for the right motor, while A15, A16 for the left one. 
+                            To be more specific, when A2 and A16 output PWM waves, the car will move forward. 
+                            Otherwise, the wheels turn in the opposite direction. 
+                            <pre><code>
+#define LeftFoward A16 
+#define LeftBackward A15 
+#define RightFoward A2 
+#define RightBackward A3 
+                            </code></pre>
+                            I use the 650 mAh battery to power the Artemis board and connect an 850 mAh battery to the motor drivers. 
+                            the grounds of the two batteries are connected. 
+                            The main reason for using separate batteries is that motors require a lot of energy to run. 
+                            If the Artemis board and motors share the same battery, the motor will spin all the time once the battery is on, 
+                            which is entirely inconvenient and we may have no choice but to change the battery frequently.
+                            With separate batteries, we are able to test the other parts, such as the ToF sensor, IMU, and Bluetooth, when the car is stationary. 
+                            <p></p>                         
+
+                            
+
+                        </p>
+
+                        <h2 class="section-heading">Motor Test</h2>
+                        <p>
+                            After a call to <code>analogWrite()</code>, the pin will generate a steady rectangular wave of the specified duty cycle until the next call[2]. 
+                            The default resolution is 8 bits and we can change it to 1 bit or 16 bits by calling <code>analogWriteResolution()</code>. 
+                            Here, I generated a 50% duty cycle PWM signal, shown in figure below, with 8-bit resolution to the A2 pin. 
+                            <p><img class="img-fluid" src="assets/img/Lab5/NewFile1.png"></p>
+
+                            I tested a single motor with the following code. The motor will spin clockwise for 1 second and then counter-clockwise.
+                            <pre><code>
+// right motor
+analogWrite(RightFoward, 127);// 50% duty cycle w/ 8-bit resolution
+delay(1000);
+analogWrite(RightFoward, 0);// stop
+delay(10);
+
+analogWrite(RightBack, 127);
+delay(1000);
+analogWrite(RightBack, 0);
+delay(10);
+                            </code></pre>
+                            <p>
+                                <iframe width="560" height="315" src="https://www.youtube.com/embed/dbGkxJOl6Vw" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                            </p>
+                            
+
+
+
+                        </p>
+
+                        <h2 class="section-heading">Install Every Thing inside the car chassis</h2>
+                        <p>
+                            After the successful motor tests, I connected the Qwicc Connection, together with 2 ToF sensors and an IMU sensor, to the Artemis. 
+                            I put the two motor drivers on the battery box. 
+                            One ToF sensor is placed at the front of the car, while another is at the right side. 
+                            IMU is fixed to the side wall, whose y-axis points to the front. 
+                            <p><img class="img-fluid" src="assets/img/Lab5/car.jpg"></p>
+
+
+
+                        </p>
+
+                        <h2 class="section-heading">Lower Limit</h2>
+                        <p>
+                            First, I tried three different analog values, 127, 63 and 31 when the resolution was 8 bits. 
+                            The duty cycle were 50%, 25%, 12.5% respectively. 
+                            As shown in the video, the left wheel can't turn when the analog value is 31. 
+                            <p>
+                                <iframe width="560" height="315" src="https://www.youtube.com/embed/9IXg82Btvak" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                            </p>
+                            According to my tests, the PWM lower limit of the right motor is 25, which is around 20% duty cycle. 
+                            As for the left motor, it stops when the analog write value is lower than 42.
+
+                        </p>
+
+                        
+                        <h2 class="section-heading">Calibration Factor</h2>
+                        <p>
+                            From the previous test, we can know that the right motor is more powerful. 
+                            When the same analog values are set for the two motors, the right one will spin faster and 
+                            the car will shift to the left instead of going straight. 
+                            Therefore, a calibration factor is necessary. 
+                            However, the spinning speed of the motor is nonlinear, which means the calibration factor will change with PWM value. 
+                            As shown in the code, I added a calibration value to the the left motor's analog write value.
+                            In the case of 25% duty cycle, I found my car performed best when the factor is 18.
+                            I also tested when the analog value of the right motor is 200. In such a situation, the left motor should input 240 instead.
+                            <pre>
+                                <code>
+int leftMotorCalibrate;
+leftMotorCalibrate=18;
+analogWrite(LeftFoward, PWM+leftMotorCalibrate);
+analogWrite(RightFoward, PWM);                                
+                                </code>
+                            </pre>
+                            In the video, we can see that the car is able to move in a straight line for 3 meters with little shift before hitting an obstacle. 
+                            <p>
+                                <iframe width="560" height="315" src="https://www.youtube.com/embed/SqRRjbjJsds" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                            </p>
+                            <a href="https://www.youtube.com/shorts/futX2nmhz80">Here is a portrait version.</a>
+                            
+
+
+
+                        </p>
+
+                        <h2 class="section-heading">Open Loop Control</h2>
+                        <p>
+                            In the demo below, the car will go forward and backward, turn right and left in the open-loop control. <br>
+                            Here are the analog values I set for the movements.
+                            <table class="table"> 
+                                <thead>
+                                <caption>PWM Values for Different Movements</caption>
+                                  <tr>
+                                    <th>Action</th>
+                                    <th>Left Motor</th>
+                                    <th>Right Motor</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  <tr>
+                                    <td>Foward</td>
+                                    <td>LeftFoward: 63 * calibrate factor</td>
+                                    <td>RightFoward: 63</td>
+                                  </tr>
+                                  <tr>
+                                    <td>Backward</td>
+                                    <td>LeftBackward: 63 * calibrate factor</td>
+                                    <td>RightBackward: 63</td>
+                                  </tr>
+                                  <tr>
+                                    <td>Turn Right</td>
+                                    <td>LeftFoward: 127* calibrate factor</td>
+                                    <td>RightFoward: 63</td>
+                                  </tr>
+                                  <tr>
+                                    <td>Turn Left</td>
+                                    <td>LeftFoward: 63 * calibrate factor</td>
+                                    <td>RightFoward: 127</td>
+                                    <td></td>
+                                  </tr>     
+                                </tbody>
+                              </table>
+                            <p>
+                                <iframe width="560" height="315" src="https://www.youtube.com/embed/x8l2n4G1des" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                            </p>
+                            
+
+                        </p>
+
+                        <h2 class="section-heading">PWM Frequency</h2>
+                        <p>
+                            The default PWM frequency generated by the Artemis is 490 Hz[2], 
+                            while the upper limit frequency for the motor driver is 50 kHz[1]. 
+                            By manually configuring the timers to generate a faster PWM signal, we are able to make the motor spin faster.
+                        </p>
+
+                        <h2 class="section-heading">Speed Range</h2>
+                        <p>
+                            I wrote a program that ramps down in speed. 
+                            In one loop, analog values for the motors are from 240 t0 0 with interval 20. 
+                            Each speed stays for one second. 
+                            Distances are gotten from the ToF sensor and the time during measurements are stored in arrays. 
+                            Once a single loop ends, those values will send to my laptop through Bluetooth. 
+                            My code is attached below.
+                            <pre><code>
+while (central.connected()) {
+    for(int i = 0;i < 11; i++){          
+        
+        // get distance and time
+        distanceSensor1.startRanging();  // Write configuration bytes to initiate measurement
+        distances[i] = distanceSensor1.getDistance(); // Get the result of the measurement from the sensor
+        time_record[i]=millis();  // Get current time
+        distanceSensor1.clearInterrupt();
+        distanceSensor1.stopRanging();
+
+        // change motor speed
+        analogWrite(LeftFoward, PWM_Left[i]);
+        analogWrite(RightFoward, PWM_Right[i]);
+        delay(1000);                             
+
+    }
+    analogWrite(LeftFoward, 0);
+    analogWrite(RightFoward, 0);
+    delay(100);
+    
+    write_distance_time();
+    delay(1000*10);
+}
+                            </code></pre>
+                            However, I found that, in this way, the travel distance will be too long. 
+                            At least much longer than the maximum distance of 360 cm for the ToF sensor even in the long-distance mode. 
+                            Additionally, the Bluetooth will be disconnected and I am not able to get the data feedback. 
+                            Therefore, this plan failed.
+                            <p></p>
+                            Actually, the minimum speed must be zero and we just need to get the highest. 
+                            I made the car run at full speed, which is a 100% duty cycle, and lasted for one second. 
+                            During that time, distances and interval time are recorded. 
+                            Here is the related code. 
+                            <pre>
+                                <code>
+int leftMotorCalibrate;
+leftMotorCalibrate=40;
+analogWrite(LeftFoward, 200+leftMotorCalibrate);
+analogWrite(RightFoward, 200); 
+if (currentMillis - previousMillis > interval) {
+    stop();
+    write_distance_time();       
+    delay(10*1000);                    
+    previousMillis = millis();
+    
+}
+else{
+    get_distance_time();
+}
+
+                                </code>
+                            </pre>
+                            According to my tests, the highest speed is around 5.69 m/s.
+
+
+                        </p>
+                        
+                        <h2 class="section-heading">References</h2>
+                       <p>
+                            [1]<a href="https://www.pololu.com/product-info-merged/2130">DRV8833 Dual Motor Driver Documentation.</a>
+                            <br>
+                            [2]<a href="https://www.arduino.cc/reference/en/language/functions/analog-io/analogwrite/">Arduino Function: analogWrite()</a>
+                            <br>
+                            
+                       </p>
+                        
+                       
+                        
+
+                        <p></p>
+
+                        <span class="caption text-muted">
+                            Posted by <a href="about.html">Lanyue Fang</a>
+                            on Mar 7, 2022
+                        </span>
+
+                        
+                       
+
+
+                    </div>
+                </div>
+            </div>
+        </article>
+        <!-- Footer-->
+        <footer class="border-top">
+            <div class="container px-4 px-lg-5">
+                <div class="row gx-4 gx-lg-5 justify-content-center">
+                    <div class="col-md-10 col-lg-8 col-xl-7">
+                        <div class="small text-center text-muted fst-italic">Copyright &copy; Lanyue Fang 2022</div>
+                    </div>
+                </div>
+            </div>
+        </footer>
+        <!-- Bootstrap core JS-->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+        <!-- Core theme JS-->
+        <script src="js/scripts.js"></script>
+    </body>
+</html>
