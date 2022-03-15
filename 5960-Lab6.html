@@ -209,7 +209,7 @@ if(WAKE && datas_index < MAX_DATA_SIZE){
                             </code></pre>
                             <p></p>
                             Here, I only used P control and it was enough. I found the robot performed pretty well when the KP was 8. 
-                            Here is the demo video.
+                            The demo video is attached following.
                             <p>
                                 <iframe width="560" height="315" src="https://www.youtube.com/embed/eW_uqFe-xUc" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
                             </p>
@@ -274,7 +274,8 @@ else
                             I guess it is related to the coasting mode. 
                             In the last lab, I tested the deadband of the motors and found that when just one motor was spinning at a low speed, 
                             the car was able to move straight on the ground. 
-                            Unfortunately, I haven't figured out a good solution to this problem. Maybe I should set a higher base speed and also add the D control. 
+                            Unfortunately, I haven't figured out a good solution to this problem. 
+                            Probably adding a D control and using Kalman Filter to get the roll angle will help. 
                             Here is the demo video. 
                             <p>
                                 <iframe width="560" height="315" src="https://www.youtube.com/embed/Xmy3UFYf5dg" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
@@ -285,21 +286,7 @@ else
 
                         </p>
 
-
-
-
-
-
-
-
-
-
-
-                        
-
-
-                    
-                        
+        
                        
                         
 
