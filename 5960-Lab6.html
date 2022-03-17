@@ -219,42 +219,9 @@ if(WAKE && datas_index < MAX_DATA_SIZE){
 
                         <h2 class="section-heading">Part2: Mobile Car</h2>
                         <p>
-                            In this part, the car is going to move forward until a new orientation, such as 180 degree, is sent, 
+                            In this part, the car is going to move forward until a new orientation is sent, 
                             then turning and driving towards that direction.
-                        </p>
- 
-                        <h3>Motor Control</h3>
-                        <p>
-                            To control the orientation when the car is moving at a set base speed, the motor control is a little more complicated than the previous one.
-                            Given that my experiment space is not so large, the base speed can not be very high. 
-                            I used the speed at 25% duty cycle as the base speed, i.e., the analog value is 63. 
-                            Similarly, the input analog value should be less than 255. 
-                            Thus, I limited the maximum offset to be 255-SPEED_BASE.
-                            Additionally, if the final input analog value is negative, speed is going to be set to the backward pins instead. 
-                            Here are related codes for the offset and motor control.
-                            <pre><code>
-// motor offset
-if(abs(motor_offset)>(255-SPEED_BASE))
-    motor_offset=(255-SPEED_BASE)*(motor_offset/abs(motor_offset));
-datas[datas_index].motor_offset=motor_offset;
-
-//right motor: SPEED_BASE+motor_offset
-if(SPEED_BASE+motor_offset>0)
-    analogWrite(RightFoward, SPEED_BASE+motor_offset);  
-else
-    analogWrite(RightBack, abs(SPEED_BASE+motor_offset));
-
-// left motor: SPEED_BASE-motor_offset
-if(SPEED_BASE-motor_offset>0)
-    analogWrite(LeftFoward, SPEED_BASE-motor_offset);  
-else
-    analogWrite(LeftBack, abs(SPEED_BASE-motor_offset));
-
-                            </code></pre>
-                        </p>
-                        
-                        <h3>Test Results</h3>
-                        <p>
+                            <p></p>
                             In the jupyter notebook, I used the following code to send commands and get debugging data. 
                             The set orientation is zero at the beginning and the car will move forward for one second. 
                             Then the setpoint will be changed to 180 degrees by the command. 
@@ -274,12 +241,30 @@ else
                             I guess it is related to the coasting mode. 
                             In the last lab, I tested the deadband of the motors and found that when just one motor was spinning at a low speed, 
                             the car was able to move straight on the ground. 
-                            Unfortunately, I haven't figured out a good solution to this problem. 
-                            Probably adding a D control and using Kalman Filter to get the roll angle will help. 
-                            Here is the demo video. 
+                            <p></p>
+                            Robby suggested I change the sampling rate of the IMU sensor. 
+                            The default full scale setting of the gyroscope is 250 degrees per second, which is not enough.
+                            After modifying it to be 1000 degrees per second, the gyroscope is able to get right angles when spinning quickly and the problem is solved. 
+                            Here is the related code.
+                            <pre><code>
+ICM_20948_fss_t myFSS; // This uses a "Full Scale Settings" structure that can contain values for all configurable sensors
+myFSS.g = dps1000; // (ICM_20948_GYRO_CONFIG_1_FS_SEL_e)
+myICM.setFullScale((ICM_20948_Internal_Acc | ICM_20948_Internal_Gyr), myFSS);
+                            </code></pre>
+                            I used P and D control together. In the demo video, the KP is 1 and KD is 0.1.
                             <p>
-                                <iframe width="560" height="315" src="https://www.youtube.com/embed/Xmy3UFYf5dg" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                                <iframe width="560" height="315" src="https://www.youtube.com/embed/Wp1eIX_5yQQ" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
                             </p>
+                            Below are the roll angles and errors when the PID was implemented.
+                            <p><img class="img-fluid" src="assets/img/Lab6/roll.PNG"></p>
+                            <p><img class="img-fluid" src="assets/img/Lab6/error.PNG"></p>
+                            To avoid the deadband, I set the range of motor offset to be [120,250]. 
+                            The following figure shows the how motor offsets changed.
+                            <p><img class="img-fluid" src="assets/img/Lab6/motor_offset.PNG"></p>
+
+
+ 
+                        
 
 
 
