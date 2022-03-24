@@ -152,7 +152,7 @@
                                 I tried the Kalman Filter with different process noise and sensor noise. 
                                 As shown in the figures, if the sensor noise is relatively smaller, the distances will be closer to the measured values. 
                                 With sigma_u=[27.7^2,0;0,27.7^2] and sigma_z=20^2, output KF distances are aligned with the measurements well.
-                                <p><img class="img-fluid" src="assets/img/Lab7/00.PNG"></p>
+                                <p><img class="img-fluid" src="assets/img/Lab7/00.png"></p>
 
                             </p>
 
@@ -166,9 +166,59 @@
                             Then Kalman Filter will do the prediction only so that we can still get the distance information and generate a motor input value. 
                             While the sensor is ready, both prediction and update will be executed. 
                             Here is the Kalman Filter function in Arduino. 
-<!-- 
-                            <p><img class="img-fluid" src="assets/img/Lab7/KF_arduino.PNG"></p>
- -->
+                            I found that it would overfolw if I used <code>Invert()</code> function for the <code>C*sigma_p*~C+sig_z</code>. 
+                            Therefore, I chose to take the reciprocal first, since it was a 1x1 matrix, and then convert it back to a matrix.
+                            <pre><code>
+void
+kalmanfilter()
+{
+    // previous state
+    state(0)=-1*datas_tof[index_tof-1].d_kf;//x=-d
+    state(1)=datas_tof[index_tof-1].v_kf;//v
+
+    int u_prev;//control
+    Matrix<1,1> u={datas_tof[index_tof-1].motor_input/SPEED_BASE};//normalize
+    Matrix<1,1> Y={datas_tof[index_tof].d_tof};//current measurement
+    
+    //prediction
+    Matrix<2,1> mu_p;
+    Matrix<2,2> sigma_p;
+    mu_p=Ad*state+Bd*u;
+    sigma_p=Ad*sigma*~Ad + sig_u;
+
+    if(Y(0)>0){//tof distance avaiable, update
+        Matrix<2,1> kf_gain;
+        Matrix<1,1> S,S_inv;
+        S=C*sigma_p*~C+sig_z;
+        S_inv(0)=1/S(0);
+        kf_gain=sigma_p*~C*S_inv;
+        state=mu_p+kf_gain*(Y-C*mu_p);
+        sigma=(I-kf_gain*C)*sigma_p;
+    }
+    else{// no measurement, no update
+        state=mu_p;
+        sigma=sigma_p;
+    }
+    // record datas
+    datas_tof[index_tof].d_kf=state(0)*-1;//x=-d
+    datas_tof[index_tof].v_kf=state(1);
+}
+                            </code></pre>
+                            The following figure shows part of the debugging data. 
+                            We can tell that Kalman Filter would do 5-6 times predictions before the measurement data was ready.
+                            The sampling rate of the ToF sensor was around 0.09696 s, while with Kalman Filter it would be much faster, with delta t around 0.014714 s. 
+                            <p><img class="img-fluid" src="assets/img/Lab7/kf_debugData.PNG"></p>
+                            I also plotted the curve of distance versus time. The blue dots represent the distances obtained by the ToF sensor (d_tof). 
+                            The red line is the result of the Kalman Filter (d_kf). 
+                            We can see from the figure that the predictions of the Kalman Filter were not aligned with the ToF sensor distances so well at the beginning. 
+                            Given that I chose to trust more on the measurement, The d_kf would be corrected once d_tof was ready. 
+                            After a small period, the two distances aligned well. 
+                            <p class="text-center"><img src="assets/img/Lab7/KFRobot.PNG"></p>
+                            
+
+
+                             
+
 
 
 
