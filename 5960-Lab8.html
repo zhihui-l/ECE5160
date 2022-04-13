@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <meta name="description" content="" />
+        <meta name="author" content="" />
+        <title>Lab8 - Lanyue Fang's Fast Robots</title>
+        <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
+        <!-- Font Awesome icons (free version)-->
+        <script src="https://use.fontawesome.com/releases/v5.15.4/js/all.js" crossorigin="anonymous"></script>
+        <!-- Google fonts-->
+        <link href="https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic" rel="stylesheet" type="text/css" />
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" rel="stylesheet" type="text/css" />
+        <!-- Core theme CSS (includes Bootstrap)-->
+        <link href="css/styles.css" rel="stylesheet" />
+    </head>
+    <body>
+        <!-- Navigation-->
+        <nav class="navbar navbar-expand-lg navbar-light" id="mainNav">
+            <div class="container px-4 px-lg-5">
+                <a class="navbar-brand" href="index.html">ECE5960 FAST ROBOTS</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+                    Menu
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarResponsive">
+                    <ul class="navbar-nav ms-auto py-4 py-lg-0">
+                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="index.html">Home</a></li>
+                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="about.html">About Me</a></li>
+                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="5960-Lab7.html">Previous</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+        <!-- Page Header-->
+        <header class="masthead" style="background-image: url('assets/img/Lab8/bg_stunt.jpg')">
+            <div class="container position-relative px-4 px-lg-5">
+                <div class="row gx-4 gx-lg-5 justify-content-center">
+                    <div class="col-md-10 col-lg-8 col-xl-7">
+                        <div class="post-heading">
+                            <h1>Lab8 Stunts!</h1>
+                            <h2 class="subheading">Achieve interesting stunts!</h2>
+                            <p class="post-meta">
+                                Posted by
+                                Lanyue Fang
+                                on Apr 11, 2022
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+        <!-- Post Content-->
+        <article class="mb-4">
+            <div class="container px-4 px-lg-5">
+                <div class="row gx-4 gx-lg-5 justify-content-center">
+                    <div class="col-md-10 col-lg-8 col-xl-7">
+
+                        
+                        <h2 class="section-heading">Parts Required</h2>
+                        <p>
+                            1 x Fully assembled robot, with Artemis, batteries, ToF sensor, and IMU.
+                        </p>
+
+                        <h2 class="section-heading">Stunt 1: Drift much ?</h2>
+                        <p>
+                            <strong>Task Description：</strong> The robot will drive fast forward, and initiate a 180-degree turn with drift 
+                            such that before it starts driving backward, it reaches a distance 0.6m from the wall. 
+                            <p></p>
+
+                            <h3>PID Controller</h3>
+                            <p>
+                                Similar to <a href="5960-Lab6.html">Lab6</a>, the input is current angle and setpoint, while the output is the PWM value for the motor control. 
+                                In Lab6, I set the robot to stop once the new setpoint is sent and then do the drift action and go backward. 
+                                This method can definitely achieve the task. However, it is likely to stop several times in the process. 
+                                To be more specific, the car may drift slightly as it travels forward. Once the error is greater than the threshold, it will stop and adjust, which will cost a lot of time. 
+                                <p></p>
+                                To solve this problem, I set a base speed for the robot and calculate the motor offset by PID controller. 
+                                The PWM values for the right and left motor are base speed plus or minus motor offset. 
+                                <p></p>
+                                Like Lab6 , P and D controll are enough. 
+                                According to my test, when KP = 4 and KD = 0.5, the robot acts well. 
+                                Below are the roll angles, errors and motor offsets when the PID was implemented. 
+                                <p><img class="img-fluid" src="assets/img/Lab8/angle.PNG"></p> 
+                                <p><img class="img-fluid" src="assets/img/Lab8/error.PNG"></p> 
+                                <p><img class="img-fluid" src="assets/img/Lab8/offset.PNG"></p> 
+
+                                The motor offset will be extremely large, especially when the setpoint suddenly changes. 
+                                To avoid the PWM value being greater than 255, 
+                                I set a parameter named 'SPEED_MAX', which is less than 255, to be the upper limit. 
+                                The right and left motor values are shown in the below figures.
+                                <p><img class="img-fluid" src="assets/img/Lab8/motor right.PNG"></p> 
+                                <p><img class="img-fluid" src="assets/img/Lab8/motor left.PNG"></p> 
+
+                                Here is the motor control function. 
+                                <pre><code>
+void
+motor_control(){ 
+    int motor_left, motor_right;
+
+    motor_right=SPEED_BASE+MOTOR_OFFSET;
+    motor_left=SPEED_BASE-MOTOR_OFFSET;
+    if (abs(motor_right)>SPEED_MAX)   motor_right=SPEED_MAX * motor_right/abs(motor_right);
+    if (abs(motor_left)>SPEED_MAX)    motor_left=SPEED_MAX * motor_left/abs(motor_left);
+    
+    if (motor_right>0){
+        analogWrite(RightFoward, motor_right);
+        analogWrite(RightBack, 0);
+    }
+
+    else{
+        analogWrite(RightBack, abs(motor_right));
+        analogWrite(RightFoward, 0);
+    }
+
+    if (motor_left>0){
+        analogWrite(LeftFoward, motor_left);
+        analogWrite(LeftBack, 0);
+    }
+    else{
+        analogWrite(LeftBack, abs(motor_left));
+        analogWrite(LeftFoward, 0);
+    }
+}
+                                </code></pre>
+
+                            </p>
+
+
+                            <h3>Estimate the Distance with Kalman Filter</h3>
+                            <p>
+                                By implementing the Kalman Filter in the robot, we can get a faster controller. 
+                                While the sensor is ready, both prediction and update will be executed. 
+                                If the ToF sensor data is not ready, Kalman Filter will only do the prediction 
+                                so that we can still get the distance information and generate a motor input value. 
+                                <p></p>
+                                According to <a href="5960-Lab7.html">Lab7</a>, the A, B, C matrices of the Kalman Filter are:  
+                                <p class="text-center"><img src="assets/img/Lab8/ABC.PNG"></p> 
+                                
+                                Through step response, we can get d and m. 
+                                In my robot model, the A = [0,1;0,-4.476], B = [0;7072.48]. 
+                                Since the distances are measured discretely, the discrete A and B is going to be:
+                                <p class="text-center"><img src="assets/img/Lab8/AdBd.PNG"></p>
+
+                                In this program, the delta_t was nearly 0.026448 s, 
+                                while sigma_u = [27.7^2,0;0,27.7^2] and sigma_z = 20^2
+                                Related code can be found in <a href="5960-Lab7.html">Lab7</a>. 
+
+                                <p><img class="img-fluid" src="assets/img/Lab8/kf.PNG"></p> 
+                                The figure shows that Kalman Filter would do 3-4 times predictions before the measurement data was ready. 
+                                Sometimes, however, the intervals of two estimations would become longer. 
+                                The reason was the PID control took some time. 
+                                In the main loop, once IMU data is ready, Artemis will calculate the motor offset by the PID controller and then estimate the distance with Kalman Filter. 
+                                In such a situation, the prediction may not be so accurate. 
+                                
+
+
+                            </p>
+
+
+                            <h3>Demo</h3>
+                            <p>
+                                <iframe width="560" height="315" src="https://www.youtube.com/embed/YsNiu5rlSrA" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                            </p>
+
+
+
+                        </p>
+
+
+                        <h2 class="section-heading">Stunt 2: Draw a pentagram</h2>
+                        <p>
+                            <strong>Task Description：</strong> The robot moves forward a certain distance and then rotates 144 degrees in place. 
+                            Perform the above movement five times. The trajectory can be regraded as a pentagram. 
+                            <p></p>
+                            I made use of the <a href="5960-Lab6.html">Lab6</a> code to do this stunt. 
+                            The followin commands were sent to the Artemis. 
+                            <img class="img-fluid" src="assets/img/Lab8/ble command.PNG">
+                            <p>
+                            Here is the demo. 
+                                <iframe width="560" height="315" src="https://www.youtube.com/embed/hgUx-Mhgqhg?start=1" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                            </p>
+                            
+
+
+                        </p>
+                        
+
+                        <h2 class="section-heading">Stunt 3: Flip and Turn</h2>
+                        <p>
+                            <strong>Task Description：</strong> The robot will drive fast forward, do the flip and turn 90 degrees in the air.
+                            <p></p>
+                            The robot should move forward at high speed and suddenly make the motors spin backward to do the flip. 
+                            I found that my robot sometimes would deflect after flipping during the tests. 
+                            I guess the reason was motors did not spin at the same rate. 
+                            My right motor was more powerful. 
+                            Therefore, I set different PWM values to the motor when spinning backward and achieve the Flip and Turn. 
+                            The key to the success of this stunt is that the battery should have enough power. 
+                            Here is the related code. 
+                            <pre><code>
+void
+loop()
+{
+    analogWrite(RightFoward, 255);
+    analogWrite(LeftFoward, 255); 
+    analogWrite(LeftBack, 0);
+    analogWrite(RightBack, 0);
+    delay(1000);
+    
+
+    analogWrite(RightFoward, 0);
+    analogWrite(LeftFoward, 0);  
+    analogWrite(RightBack, 255);
+    analogWrite(LeftBack, 220);
+    delay(1500);
+    
+    analogWrite(RightFoward, 255);
+    analogWrite(RightBack, 255);
+    analogWrite(LeftFoward, 255);  
+    analogWrite(LeftBack, 255);    
+
+}
+                            </code></pre>
+                            <p>
+                                <iframe width="560" height="315" src="https://www.youtube.com/embed/6DauRSHfyLE?start=1" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                            </p>
+
+
+                        </p>
+
+                        <h2 class="section-heading">Bloopers</h2>
+                        <p>
+                            <iframe width="560" height="315" src="https://www.youtube.com/embed/vta9d8QE4fc" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                        </p>
+
+                        
+                        
+
+                        <span class="caption text-muted">
+                            Posted by <a href="about.html">Lanyue Fang</a>
+                            on Apr 11, 2022
+                        </span>
+
+                        
+                       
+
+
+                    </div>
+                </div>
+            </div>
+        </article>
+        <!-- Footer-->
+        <footer class="border-top">
+            <div class="container px-4 px-lg-5">
+                <div class="row gx-4 gx-lg-5 justify-content-center">
+                    <div class="col-md-10 col-lg-8 col-xl-7">
+                        <div class="small text-center text-muted fst-italic">Copyright &copy; Lanyue Fang 2022</div>
+                    </div>
+                </div>
+            </div>
+        </footer>
+        <!-- Bootstrap core JS-->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+        <!-- Core theme JS-->
+        <script src="js/scripts.js"></script>
+    </body>
+</html>
