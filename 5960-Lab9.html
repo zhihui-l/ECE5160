@@ -34,7 +34,7 @@
             </div>
         </nav>
         <!-- Page Header-->
-        <header class="masthead" style="background-image: url('assets/img/post-bg.jpg')">
+        <header class="masthead" style="background-image: url('assets/img/Lab9/mapping\ result.jpg')">
             <div class="container position-relative px-4 px-lg-5">
                 <div class="row gx-4 gx-lg-5 justify-content-center">
                     <div class="col-md-10 col-lg-8 col-xl-7">
@@ -109,10 +109,15 @@
                             Here is the control program in jupyter notebook. 
                             <p><img class="img-fluid" src="assets/img/Lab9/BLECommand.PNG"></p>
 
-                            TO DO<br>
-                            rotating twice to see how precise the scan are 
-                            picture: actual image of the lab space 
-                            conclusion: measurements matched up with what I expected. 
+                            <br>
+                            To see how accurate and repeatable the scan was, I did the rotations and measurements twice at the same position. 
+                            The actual roll angles were recorded together with the distances. 
+                            The polar plot below shows that the two scans are quite similar, especially when the obstacle is not so far away. 
+                            However, when the distance increases, the accuracy of the TOF sensor drops.
+                            Generally, the measurements matched up with what I expected.
+                            <p><img class="img-fluid" src="assets/img/Lab9/polar.jpg"></p>
+
+
                             <p></p>
                             I repeated the measurements in several marked locations and got the data below. 
                             The robot always starts in the positive direction of the x-axis.  
@@ -153,12 +158,12 @@
 
                             Here is the related code.
                             <pre><code>
-sensorOriginR=[0.075,0];%
+sensorOriginR=[0.075,0];
 obstacles=[];
 for i=1:size(dataStore.robotPose,1)
     for j=0:18
        theta=-j*20*pi/180;
-       robotPose=[dataStore.robotPose(i,:)*0.305,theta]
+       robotPose=[dataStore.robotPose(i,:)*0.305,theta] % unit: meter
        distance=dataStore.distances(i,j+1)*0.001
        
        % sensor pose in the global frame
@@ -186,6 +191,9 @@ end
                             To convert the map into a format we can use in the simulator, I manually estimated where the actual walls/obstacles were based on the scatter plot. 
                             Here are the results: 
                             <p><img class="img-fluid" src="assets/img/Lab9/mapping result.jpg"></p>
+                            The estimated walls and obstacles are generally consistent with the true ones. 
+                            But for small obstacles, due to the limited number of points, it will be more challenging to estimate. 
+                            We can scan at more locations, especially the areas around the obstacle, to solve this problem.  
                            
                                                         
                         </p>
