@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <meta name="description" content="" />
+        <meta name="author" content="" />
+        <title>Lab9 - Lanyue Fang's Fast Robots</title>
+        <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
+        <!-- Font Awesome icons (free version)-->
+        <script src="https://use.fontawesome.com/releases/v5.15.4/js/all.js" crossorigin="anonymous"></script>
+        <!-- Google fonts-->
+        <link href="https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic" rel="stylesheet" type="text/css" />
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" rel="stylesheet" type="text/css" />
+        <!-- Core theme CSS (includes Bootstrap)-->
+        <link href="css/styles.css" rel="stylesheet" />
+    </head>
+    <body>
+        <!-- Navigation-->
+        <nav class="navbar navbar-expand-lg navbar-light" id="mainNav">
+            <div class="container px-4 px-lg-5">
+                <a class="navbar-brand" href="index.html">ECE5960 FAST ROBOTS</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+                    Menu
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarResponsive">
+                    <ul class="navbar-nav ms-auto py-4 py-lg-0">
+                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="index.html">Home</a></li>
+                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="about.html">About Me</a></li>
+                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="5960-Lab8.html">Previous</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+        <!-- Page Header-->
+        <header class="masthead" style="background-image: url('assets/img/Lab9/mapping\ result.jpg')">
+            <div class="container position-relative px-4 px-lg-5">
+                <div class="row gx-4 gx-lg-5 justify-content-center">
+                    <div class="col-md-10 col-lg-8 col-xl-7">
+                        <div class="post-heading">
+                            <h1>Lab9 Mapping(real)</h1>
+                            <h2 class="subheading">Build up a map of a static room.</h2>
+                            <p class="post-meta">
+                                Posted by
+                                Lanyue Fang
+                                on Apr 11, 2022
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+        <!-- Post Content-->
+        <article class="mb-4">
+            <div class="container px-4 px-lg-5">
+                <div class="row gx-4 gx-lg-5 justify-content-center">
+                    <div class="col-md-10 col-lg-8 col-xl-7">
+
+                        <h2 class="section-heading">Task Description</h2>
+                        <p>
+                            The purpose of this lab is to build up a map of a static room. 
+                            To build the map, I placed your robot in a series of marked-up locations, 
+                            and made it spin around its axis while measuring the ToF readings. 
+                            To be more specific, I created a PID controller that allowed the robot to do on-axis turns. 
+                            Distances would be obtained by the TOF sensor every 20 degrees of rotation. 
+                            The following is the detailed experimental procedure. 
+                        </p>
+
+
+                        <h2 class="section-heading">Orientation Control (PID)</h2>
+                        <p>
+                            The orientation control has already been implemented in <a href="5960-Lab6.html"></a>Lab6</a> and can be used here directly. 
+                            To be more specific, the robot obtains angular velocities by gyroscope and calculates real-time roll angle. 
+                            If the error between the current roll angle and setpoint is larger than 5 degrees, 
+                            a PID controller is going to calculate the motor offset and make the motors spin. 
+                            P and D controls are enough here, and motor offset is equal to <strong>KP * error + KD * d_error / dt</strong>. 
+                            According to my tests, the control performs best <strong>when KP is 1 and KD is 0.1</strong>. 
+                            <p></p>
+                            To get a better map, more readings should be obtained during a 360-degree rotation. 
+                            However, given the limitations of motor control and the accuracy of the IMU sensor, 
+                            the orientation control is not able to be so accurate. 
+                            The smaller the angle interval the more difficult the control will be. 
+                            Therefore, I chose the angle interval to be 20 degrees and got 19 readings per 360-degree rotation (from 0° to 360°). 
+                            <p></p>
+                            In the following video, the set angle increases 20° every time. 
+                            We can tell that the on axis turns of the robot is stable. 
+                            <iframe width="560" height="315" src="https://www.youtube.com/embed/SbecxstmB6U" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                            <p></p>
+                            Figures below show the angle, error and the output motor offset during the rotation. 
+                            <p>
+                                <img class="img-fluid" src="assets/img/Lab9/angle.PNG">
+                                <img class="img-fluid" src="assets/img/Lab9/error.PNG">
+                                <img class="img-fluid" src="assets/img/Lab9/offset.PNG">
+                            </p>
+                            I set the motor offset range to be [120, 250] so that the robot would be able to rotate when the error was small. 
+                            The angle error after each rotation was less than 2.5°. 
+                            Meanwhile, the rotation axis of the robot may move 2-3cm. 
+                            Therefore, when the robot implements an on-axis turn in the middle of a 4x4m square, empty room, 
+                            the error of the map is roughly 2.5-3.5cm.
+                            
+                        </p>
+
+                        <h2 class="section-heading">Read out Distances</h2>
+                        <p>
+                            Once the robot rotates to the set orientation, the TOF sensor will measure the distance from the front of the car to the obstacle. 
+                            I recorded 10 distance data and calculate the average. 
+                            A Bluetooth command 'GET_DISTANCE' is used to send the average distance from Artemis to the computer. 
+                            Here is the control program in jupyter notebook. 
+                            <p><img class="img-fluid" src="assets/img/Lab9/BLECommand.PNG"></p>
+
+                            <br>
+                            To see how accurate and repeatable the scan was, I did the rotations and measurements twice at the same position. 
+                            The actual roll angles were recorded together with the distances. 
+                            The polar plot below shows that the two scans are quite similar, especially when the obstacle is not so far away. 
+                            However, when the distance increases, the accuracy of the TOF sensor drops.
+                            Generally, the measurements matched up with what I expected.
+                            <p><img class="img-fluid" src="assets/img/Lab9/polar.jpg"></p>
+
+
+                            <p></p>
+                            I repeated the measurements in several marked locations and got the data below. 
+                            The robot always starts in the positive direction of the x-axis.  
+                            The unit of distance is mm.
+                            <p><img class="img-fluid" src="assets/img/Lab9/distances_v2.png"></p>
+
+                            
+                        </p>
+
+
+                        <h2 class="section-heading">Merge and Plot the readings</h2>
+                        <p>
+                            <h3>Transformation Matrix</h3>
+                            Given that the distances we obtained and the sensor position are in the robot position, we should change them into the global frame. 
+                            The schematic diagram and transformation matrix are shown below.
+                            <p><img class="img-fluid" src="assets/img/Lab9/matrix.PNG"></p>
+                            [px,py] is the coordinates of the center of the robot. theta is the angle between the two x-axes of the global frame and the local frame. 
+                            
+                            <p></p>
+
+                            <h3>Get Obstacle Positions</h3>
+                            <p><img class="img-fluid" src="assets/img/Lab9/car.jpg"></p>
+                            The robot frame is shown in the figure above. 
+                            The positive direction of the x-axis points to the front of the car, the y-axis is facing left, and the z-axis is perpendicular to the body up. 
+                            The distance between the TOF sensor and the center of the robot is nearly 7.5cm. 
+                            Thus, the sensor position in robot frame is [0.075,0] m. 
+                            <p></p>
+                            I creaetd a Matlab Script to caluculate the obstacle positions: 
+                            <p></p>
+                            <strong>First</strong>, we need to get the robot pose = [px,py,theta] according to the current marked location and robot orientation (global frame).<br> 
+                            <strong>Second</strong>, get the current sensor pose by changing it from robot frame to the inertial reference. 
+                            That is: sensorPoseGlobal = T_IB * sensorPoseRobot = T_IB * [0.075,0]. <br>
+                            <strong>Third</strong>, we can calulate the dx and dy by theta and distance. 
+                            And the obstacle position is going to be [x,y] = sensorPoseGlobal + [dx,dy].
+                            <p></p>
+                            Repeat the above steps for each orientation in each marked location, we can get a series of points indicating the position of obstacles. 
+                            <p><img class="img-fluid" src="assets/img/Lab9/scatter plot.jpg"></p>
+
+                            Here is the related code.
+                            <pre><code>
+sensorOriginR=[0.075,0];
+obstacles=[];
+for i=1:size(dataStore.robotPose,1)
+    for j=0:18
+       theta=-j*20*pi/180;
+       robotPose=[dataStore.robotPose(i,:)*0.305,theta] % unit: meter
+       distance=dataStore.distances(i,j+1)*0.001
+       
+       % sensor pose in the global frame
+       sensorOriginGlobal=robot2global(robotPose,sensorOriginR)
+       initangle=0;
+       angleGlobal=initangle+theta;
+       
+       dx=distance*cos(angleGlobal)
+       dy=distance*sin(angleGlobal)
+       x_obstacle=dx+sensorOriginGlobal(1)
+       y_obstacle=dy+sensorOriginGlobal(2)
+       
+       obstacles=[obstacles;x_obstacle,y_obstacle]
+    end
+        
+end
+                            </code></pre>
+
+                            
+                        </p>
+
+
+                        <h2 class="section-heading">Line-Based Map</h2>
+                        <p>
+                            To convert the map into a format we can use in the simulator, I manually estimated where the actual walls/obstacles were based on the scatter plot. 
+                            Here are the results: 
+                            <p><img class="img-fluid" src="assets/img/Lab9/mapping result.jpg"></p>
+                            The estimated walls and obstacles are generally consistent with the true ones. 
+                            But for small obstacles, due to the limited number of points, it will be more challenging to estimate. 
+                            We can scan at more locations, especially the areas around the obstacle, to solve this problem.  
+                           
+                                                        
+                        </p>
+                        
+
+
+
+
+        
+                       
+                        
+
+                        </p>
+
+                        <span class="caption text-muted">
+                            Posted by <a href="about.html">Lanyue Fang</a>
+                            on Apr 11, 2022
+                        </span>
+
+                        
+                       
+
+
+                    </div>
+                </div>
+            </div>
+        </article>
+        <!-- Footer-->
+        <footer class="border-top">
+            <div class="container px-4 px-lg-5">
+                <div class="row gx-4 gx-lg-5 justify-content-center">
+                    <div class="col-md-10 col-lg-8 col-xl-7">
+                        <div class="small text-center text-muted fst-italic">Copyright &copy; Lanyue Fang 2022</div>
+                    </div>
+                </div>
+            </div>
+        </footer>
+        <!-- Bootstrap core JS-->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+        <!-- Core theme JS-->
+        <script src="js/scripts.js"></script>
+    </body>
+</html>
