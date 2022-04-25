@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
         <meta name="description" content="" />
         <meta name="author" content="" />
-        <title>Lab9 - Lanyue Fang's Fast Robots</title>
+        <title>Lab11 - Lanyue Fang's Fast Robots</title>
         <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
         <!-- Font Awesome icons (free version)-->
         <script src="https://use.fontawesome.com/releases/v5.15.4/js/all.js" crossorigin="anonymous"></script>
@@ -34,17 +34,17 @@
             </div>
         </nav>
         <!-- Page Header-->
-        <header class="masthead" style="background-image: url('assets/img/Lab9/mapping\ result.jpg')">
+        <header class="masthead" style="background-image: url('assets/img/Lab11/trajectory.PNG')">
             <div class="container position-relative px-4 px-lg-5">
                 <div class="row gx-4 gx-lg-5 justify-content-center">
                     <div class="col-md-10 col-lg-8 col-xl-7">
                         <div class="post-heading">
-                            <h1>Lab9 Mapping(real)</h1>
-                            <h2 class="subheading">Build up a map of a static room.</h2>
+                            <h1>Lab11 Localization(sim)</h1>
+                            <h2 class="subheading">Implement grid localization using Bayes filter.</h2>
                             <p class="post-meta">
                                 Posted by
                                 Lanyue Fang
-                                on Apr 11, 2022
+                                on Apr 25, 2022
                             </p>
                         </div>
                     </div>
@@ -57,160 +57,108 @@
                 <div class="row gx-4 gx-lg-5 justify-content-center">
                     <div class="col-md-10 col-lg-8 col-xl-7">
 
-                        <h2 class="section-heading">Task Description</h2>
+                        <h2 class="section-heading">Grid Localization</h2>
                         <p>
-                            The purpose of this lab is to build up a map of a static room. 
-                            To build the map, I placed your robot in a series of marked-up locations, 
-                            and made it spin around its axis while measuring the ToF readings. 
-                            To be more specific, I created a PID controller that allowed the robot to do on-axis turns. 
-                            Distances would be obtained by the TOF sensor every 20 degrees of rotation. 
-                            The following is the detailed experimental procedure. 
+                            The robot state is 3 dimensional and is given by [x, y, theta]. 
+                            In this lab, the robot’s world is a continuous space that spans from[1]:<br>
+                            <div class="text-center">
+                                x: [-1.6764, +1.9812) meters or [-5.5, 6.5) feet;<br>
+                                y: [-1.3716, +1.3716) meters or [-4.5, +4.5) feet;<br>
+                                theta: [-180, +180) degrees.<br>
+                            </div>
+                            <p></p>
+                            We discretize the continuous state space into a finite 3D grid space for the grid localization. 
+                            Each grid cells are identical in size. 
+                            In this lab, we chose the resolution of the grid to be 0.3048 m, 0.3048 meters, and 20 degrees along the x, y, and theta axes, respectively. 
+                            Accordingly, the totala number of cells are 12*9*18. 
+                            <p></p>
+                            The belief of the robot is therefore represented by the set of probabilities of each grid cell, and these probabilities should sum to 1. 
+
+                        </p>
+
+                        <h2 class="section-heading">Motion Model</h2>
+                        <p>        
+                            The odometry data before and after the movement is recorded at every timestamp. 
+                            This relative odometry information can be described by the motion parameters: rotation1, translation, and rotation2. 
+                            <p><img class="img-fluid" src="assets/img/Lab11/odometry motion model.PNG"></p>
+                            To go from one state to another, the robot will firstly turn a certain angle (rotation1), secondly go forward (translation), and do the final rotation (rotation2). 
+                            I wrote the function <code>compute_control</code> to extract the control information from the odometry. 
+                            <p><img class="img-fluid" src="assets/img/Lab11/compute_control.PNG"></p>
+                            Given that the theta is in the range of [-180, +180) degrees, I used arctan2 and normalized the related output. 
+                            <p></p>
+                            In this lab, we assume the process noise follows a Gaussian distribution. 
+                            Given the rotation1, translation and rotation2 are independent, the p(x'|x, u) is:
+                            <p><img class="img-fluid" src="assets/img/Lab11/motion_prob.PNG"></p>
+                            And I wrote a function <code>odom_motion_model</code> which returns the probability p(x'|x, u). 
+                            <img class="img-fluid" src="assets/img/Lab11/odom_motion_model.PNG">
+
                         </p>
 
 
-                        <h2 class="section-heading">Orientation Control (PID)</h2>
+                        <h2 class="section-heading">Sensor Model</h2>
+                        <p>        
+                            After reaching a new pose, the robot will rotate counterclockwise and get 18 measurements at the equidistant angular position. 
+                            Compared with the expected measurements, we are able to correct the pose. 
+                            Assuming individual measurements are independent and the noise is in gaussian distribution, the likelihood of P(z|x) is equal to:
+                            <p><img class="img-fluid" src="assets/img/Lab11/sensor model equation.PNG"></p>
+                            The related code is shown below.
+                            <img class="img-fluid" src="assets/img/Lab11/sensor_model.PNG">
+                        </p>
+
+
+                        <h2 class="section-heading">Bayes Filter</h2>
                         <p>
-                            The orientation control has already been implemented in <a href="5960-Lab6.html"></a>Lab6</a> and can be used here directly. 
-                            To be more specific, the robot obtains angular velocities by gyroscope and calculates real-time roll angle. 
-                            If the error between the current roll angle and setpoint is larger than 5 degrees, 
-                            a PID controller is going to calculate the motor offset and make the motors spin. 
-                            P and D controls are enough here, and motor offset is equal to <strong>KP * error + KD * d_error / dt</strong>. 
-                            According to my tests, the control performs best <strong>when KP is 1 and KD is 0.1</strong>. 
+                            Bayes Filter is one of the fundamental approaches to estimating the distribution in a process with incoming measurements. 
+                            There are two major steps:
+                            <p><img class="img-fluid" src="assets/img/Lab11/bayes filter.PNG"></p>
+                            <strong>Step1 Prediction</strong>: For all previous states, calculate the probability of becoming the current state given the input control, and add them up, noted as bel_bar. <br>
+                            <strong>Step2 Update</strong> Update the likelihood based on the measurements. 
                             <p></p>
-                            To get a better map, more readings should be obtained during a 360-degree rotation. 
-                            However, given the limitations of motor control and the accuracy of the IMU sensor, 
-                            the orientation control is not able to be so accurate. 
-                            The smaller the angle interval the more difficult the control will be. 
-                            Therefore, I chose the angle interval to be 20 degrees and got 19 readings per 360-degree rotation (from 0° to 360°). 
-                            <p></p>
-                            In the following video, the set angle increases 20° every time. 
-                            We can tell that the on axis turns of the robot is stable. 
-                            <iframe width="560" height="315" src="https://www.youtube.com/embed/SbecxstmB6U" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-                            <p></p>
-                            Figures below show the angle, error and the output motor offset during the rotation. 
+
+                            <h3>Prediction Step</h3>
                             <p>
-                                <img class="img-fluid" src="assets/img/Lab9/angle.PNG">
-                                <img class="img-fluid" src="assets/img/Lab9/error.PNG">
-                                <img class="img-fluid" src="assets/img/Lab9/offset.PNG">
+                                We need six 'for' loops to do the prediction step for all states: three for the current state, and another three for the previous state. 
+                                Given that the grid has 12×9×18 possible states, the total loop number is 3,779,136, which will take a lot of time. 
+                                To make the prediction more efficient, I set a threshold (0.0001) for the bel(x_prev). 
+                                If the bel(x_prev) is less than the threshold, I will regard the robot can't be in this grid and skip it. 
+                                That is to say, the inner three 'for' loops for getting the current states will not execute. 
+                                Here is the related code. 
+                                <p><img class="img-fluid" src="assets/img/Lab11/prediction step.PNG"></p>
                             </p>
-                            I set the motor offset range to be [120, 250] so that the robot would be able to rotate when the error was small. 
-                            The angle error after each rotation was less than 2.5°. 
-                            Meanwhile, the rotation axis of the robot may move 2-3cm. 
-                            Therefore, when the robot implements an on-axis turn in the middle of a 4x4m square, empty room, 
-                            the error of the map is roughly 2.5-3.5cm.
-                            
+
+                            <h3>Update Step</h3>
+                            <p>
+                                After the prediction, the Bayes Filter will update the probabilities based on the bel_bar and the sensor model. 
+                                That is, for every state, the new likelihood is the bel_bar(xt) * p(z|x) and then normalize it. 
+                                Here is the related code.
+                                <p><img class="img-fluid" src="assets/img/Lab11/update_step.PNG"></p>
+                            </p>
+                        
+
                         </p>
 
-                        <h2 class="section-heading">Read out Distances</h2>
+                        <h2 class="section-heading">Demo</h2>
                         <p>
-                            Once the robot rotates to the set orientation, the TOF sensor will measure the distance from the front of the car to the obstacle. 
-                            I recorded 10 distance data and calculate the average. 
-                            A Bluetooth command 'GET_DISTANCE' is used to send the average distance from Artemis to the computer. 
-                            Here is the control program in jupyter notebook. 
-                            <p><img class="img-fluid" src="assets/img/Lab9/BLECommand.PNG"></p>
-
-                            <br>
-                            To see how accurate and repeatable the scan was, I did the rotations and measurements twice at the same position. 
-                            The actual roll angles were recorded together with the distances. 
-                            The polar plot below shows that the two scans are quite similar, especially when the obstacle is not so far away. 
-                            However, when the distance increases, the accuracy of the TOF sensor drops.
-                            Generally, the measurements matched up with what I expected.
-                            <p><img class="img-fluid" src="assets/img/Lab9/polar.jpg"></p>
-
-
+                            <div style="text-align: center;">
+                                <iframe width="560" height="315" src="https://www.youtube.com/embed/K_Cz6s71X40" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                            </div>
                             <p></p>
-                            I repeated the measurements in several marked locations and got the data below. 
-                            The robot always starts in the positive direction of the x-axis.  
-                            The unit of distance is mm.
-                            <p><img class="img-fluid" src="assets/img/Lab9/distances_v2.png"></p>
-
-                            
-                        </p>
-
-
-                        <h2 class="section-heading">Merge and Plot the readings</h2>
-                        <p>
-                            <h3>Transformation Matrix</h3>
-                            Given that the distances we obtained and the sensor position are in the robot position, we should change them into the global frame. 
-                            The schematic diagram and transformation matrix are shown below.
-                            <p><img class="img-fluid" src="assets/img/Lab9/matrix.PNG"></p>
-                            [px,py] is the coordinates of the center of the robot. theta is the angle between the two x-axes of the global frame and the local frame. 
-                            
-                            <p></p>
-
-                            <h3>Get Obstacle Positions</h3>
-                            <p><img class="img-fluid" src="assets/img/Lab9/car.jpg"></p>
-                            The robot frame is shown in the figure above. 
-                            The positive direction of the x-axis points to the front of the car, the y-axis is facing left, and the z-axis is perpendicular to the body up. 
-                            The distance between the TOF sensor and the center of the robot is nearly 7.5cm. 
-                            Thus, the sensor position in robot frame is [0.075,0] m. 
-                            <p></p>
-                            I creaetd a Matlab Script to caluculate the obstacle positions: 
-                            <p></p>
-                            <strong>First</strong>, we need to get the robot pose = [px,py,theta] according to the current marked location and robot orientation (global frame).<br> 
-                            <strong>Second</strong>, get the current sensor pose by changing it from robot frame to the inertial reference. 
-                            That is: sensorPoseGlobal = T_IB * sensorPoseRobot = T_IB * [0.075,0]. <br>
-                            <strong>Third</strong>, we can calulate the dx and dy by theta and distance. 
-                            And the obstacle position is going to be [x,y] = sensorPoseGlobal + [dx,dy].
-                            <p></p>
-                            Repeat the above steps for each orientation in each marked location, we can get a series of points indicating the position of obstacles. 
-                            <p><img class="img-fluid" src="assets/img/Lab9/scatter plot.jpg"></p>
-
-                            Here is the related code.
-                            <pre><code>
-sensorOriginR=[0.075,0];
-obstacles=[];
-for i=1:size(dataStore.robotPose,1)
-    for j=0:18
-       theta=-j*20*pi/180;
-       robotPose=[dataStore.robotPose(i,:)*0.305,theta] % unit: meter
-       distance=dataStore.distances(i,j+1)*0.001
-       
-       % sensor pose in the global frame
-       sensorOriginGlobal=robot2global(robotPose,sensorOriginR)
-       initangle=0;
-       angleGlobal=initangle+theta;
-       
-       dx=distance*cos(angleGlobal)
-       dy=distance*sin(angleGlobal)
-       x_obstacle=dx+sensorOriginGlobal(1)
-       y_obstacle=dy+sensorOriginGlobal(2)
-       
-       obstacles=[obstacles;x_obstacle,y_obstacle]
-    end
-        
-end
-                            </code></pre>
-
-                            
-                        </p>
-
-
-                        <h2 class="section-heading">Line-Based Map</h2>
-                        <p>
-                            To convert the map into a format we can use in the simulator, I manually estimated where the actual walls/obstacles were based on the scatter plot. 
-                            Here are the results: 
-                            <p><img class="img-fluid" src="assets/img/Lab9/mapping result.jpg"></p>
-                            The estimated walls and obstacles are generally consistent with the true ones. 
-                            But for small obstacles, due to the limited number of points, it will be more challenging to estimate. 
-                            We can scan at more locations, especially the areas around the obstacle, to solve this problem.  
-                           
-                                                        
+                            As shown in the video, the Bayes Filter can be done in just two minutes and the results are close to the ground truth.
                         </p>
                         
 
 
+                        
 
-
-        
+                        <h2 class="section-heading">References</h2>
+                        <p>
+                            [1].<a href="https://cei-lab.github.io/ECE4960-2022/Lab11.html">Fast Robots Lab11 Guidance</a>
+                        </p>
                        
-                        
-
-                        </p>
 
                         <span class="caption text-muted">
                             Posted by <a href="about.html">Lanyue Fang</a>
-                            on Apr 11, 2022
+                            on Apr 25, 2022
                         </span>
 
                         
