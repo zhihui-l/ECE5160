@@ -210,9 +210,9 @@ if(WAKE && datas_index < MAX_DATA_SIZE){
                             <p></p>
                             Here, I only used P control and it was enough. I found the robot performed pretty well when the KP was 8. 
                             The demo video is attached following.
-                            <p>
+                            <div style="text-align: center;"><p>
                                 <iframe width="560" height="315" src="https://www.youtube.com/embed/eW_uqFe-xUc" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-                            </p>
+                            </p></div>
 
                         </p>
 
@@ -252,9 +252,9 @@ myFSS.g = dps1000; // (ICM_20948_GYRO_CONFIG_1_FS_SEL_e)
 myICM.setFullScale((ICM_20948_Internal_Acc | ICM_20948_Internal_Gyr), myFSS);
                             </code></pre>
                             I used P and D control together. In the demo video, the KP is 1 and KD is 0.1.
-                            <p>
+                            <div style="text-align: center;"><p>
                                 <iframe width="560" height="315" src="https://www.youtube.com/embed/Wp1eIX_5yQQ" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-                            </p>
+                            </p></div>
                             Below are the roll angles and errors when the PID was implemented.
                             <p><img class="img-fluid" src="assets/img/Lab6/roll.PNG"></p>
                             <p><img class="img-fluid" src="assets/img/Lab6/error.PNG"></p>

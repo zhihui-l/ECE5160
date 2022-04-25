@@ -167,9 +167,9 @@ pinMode(16,OUTPUT); //sensor#2 XSHUT
                             In the main loop, two sensors will start rangeing and get distances separately.
                             
                             Here is the demo video.
-                            <p>
+                            <div style="text-align: center;"><p>
                                 <iframe width="560" height="315" src="https://www.youtube.com/embed/NX2W_saAoKQ" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-                            </p>
+                            </p></div>
                             
    
 
@@ -243,9 +243,9 @@ pinMode(16,OUTPUT); //sensor#2 XSHUT
                             When flipping down the sensor, az will become negative.
                             As for rotation, angular velocities will change a lot.
                             Here is the demo video.
-                            <p>
+                            <div style="text-align: center;"><p>
                             <iframe width="560" height="315" src="https://www.youtube.com/embed/2Bw-f-XZKnA" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>  
-                            </p>
+                            </p></div>
                         </p>
 
                         <p><h3>Calculate Pitch and Roll from the Accelerometer Data</h3>
@@ -339,9 +339,9 @@ pinMode(16,OUTPUT); //sensor#2 XSHUT
                             In addition, when the sampling frequency decreases, the accuracy decreases.
                             This is because when calculating the current tilt angles by integrating the angular velocities, we assume that the angular velosities don't change during the sampling period.
                             Here is the demo video.
-                            <p>
+                            <div style="text-align: center;"><p>
                                 <iframe width="560" height="315" src="https://www.youtube.com/embed/9Uw9Q45TTTE" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-                            </p>
+                            </p></div>
                         
                         </p>
 
@@ -370,9 +370,9 @@ ym = myICM.magY()*cos(roll) + myICM.magZ()*sin(roll);
                             In the demo video, I was facing geographically North and the x-axis of IMU sensor was pointing to north pole at the begining.
                             xm and ym got the maximum value when x axis or y axis were pointing to the north pole of the magnetic field, which is geographically South.
                             
-                            <p>
+                            <div style="text-align: center;"><p>
                                 <iframe width="560" height="315" src="https://www.youtube.com/embed/oboZH5kQ1L4" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-                            </p>
+                            </p></div>
 
                             We can calculate the yaw by the xm, ym: yaw = atan2(ym/xm).
                             I compared the yaw calculate by gyroscope and magnetometer respectively.
