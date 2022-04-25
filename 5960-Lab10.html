@@ -34,17 +34,17 @@
             </div>
         </nav>
         <!-- Page Header-->
-        <header class="masthead" style="background-image: url('assets/img/Lab9/mapping\ result.jpg')">
+        <header class="masthead" style="background-image: url('assets/img/Lab10/bg.PNG')">
             <div class="container position-relative px-4 px-lg-5">
                 <div class="row gx-4 gx-lg-5 justify-content-center">
                     <div class="col-md-10 col-lg-8 col-xl-7">
                         <div class="post-heading">
-                            <h1>Lab9 Mapping(real)</h1>
-                            <h2 class="subheading">Build up a map of a static room.</h2>
+                            <h1>Lab10 Simulator</h1>
+                            <h2 class="subheading">Setup and use the simulation environment.</h2>
                             <p class="post-meta">
                                 Posted by
                                 Lanyue Fang
-                                on Apr 11, 2022
+                                on Apr 24, 2022
                             </p>
                         </div>
                     </div>
@@ -57,160 +57,86 @@
                 <div class="row gx-4 gx-lg-5 justify-content-center">
                     <div class="col-md-10 col-lg-8 col-xl-7">
 
-                        <h2 class="section-heading">Task Description</h2>
+                        <h2 class="section-heading">Simulator Features and Functionalities</h2>
                         <p>
-                            The purpose of this lab is to build up a map of a static room. 
-                            To build the map, I placed your robot in a series of marked-up locations, 
-                            and made it spin around its axis while measuring the ToF readings. 
-                            To be more specific, I created a PID controller that allowed the robot to do on-axis turns. 
-                            Distances would be obtained by the TOF sensor every 20 degrees of rotation. 
-                            The following is the detailed experimental procedure. 
-                        </p>
-
-
-                        <h2 class="section-heading">Orientation Control (PID)</h2>
-                        <p>
-                            The orientation control has already been implemented in <a href="5960-Lab6.html"></a>Lab6</a> and can be used here directly. 
-                            To be more specific, the robot obtains angular velocities by gyroscope and calculates real-time roll angle. 
-                            If the error between the current roll angle and setpoint is larger than 5 degrees, 
-                            a PID controller is going to calculate the motor offset and make the motors spin. 
-                            P and D controls are enough here, and motor offset is equal to <strong>KP * error + KD * d_error / dt</strong>. 
-                            According to my tests, the control performs best <strong>when KP is 1 and KD is 0.1</strong>. 
-                            <p></p>
-                            To get a better map, more readings should be obtained during a 360-degree rotation. 
-                            However, given the limitations of motor control and the accuracy of the IMU sensor, 
-                            the orientation control is not able to be so accurate. 
-                            The smaller the angle interval the more difficult the control will be. 
-                            Therefore, I chose the angle interval to be 20 degrees and got 19 readings per 360-degree rotation (from 0° to 360°). 
-                            <p></p>
-                            In the following video, the set angle increases 20° every time. 
-                            We can tell that the on axis turns of the robot is stable. 
-                            <iframe width="560" height="315" src="https://www.youtube.com/embed/SbecxstmB6U" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-                            <p></p>
-                            Figures below show the angle, error and the output motor offset during the rotation. 
+                            <h3>Simulator and Plotter</h3>
                             <p>
-                                <img class="img-fluid" src="assets/img/Lab9/angle.PNG">
-                                <img class="img-fluid" src="assets/img/Lab9/error.PNG">
-                                <img class="img-fluid" src="assets/img/Lab9/offset.PNG">
+                                Simulator is used to control the robot, while the Plotter shows the localization and trajectory.
+                                We can use a GUI to start and track the running status of the simulator and plotter. 
+                                <p><img class="img-fluid" src="assets/img/Lab10/gui.PNG"></p>
+                                Once click the "Reset" button, the robot will go back to the [0,0,0] pose and the plotter will clear the previous trajectories. 
+                                We can also use following functions to do the same. 
+                                <p></p>
+                                <blockquote>
+                                    START_SIM() # Start the simulator<br>
+                                    START_PLOTTER() # Start the plotter<br>
+                                    <br>
+                                    STOP_SIM() # Stop the simulator<br>
+                                    STOP_PLOTTER() # Stop the plotter<br>
+                                    <br>
+                                    RESET_SIM() # Reset the simulator<br>
+                                    RESET_PLOTTER() # Start the plotter<br>
+                                </blockquote>
+                                
                             </p>
-                            I set the motor offset range to be [120, 250] so that the robot would be able to rotate when the error was small. 
-                            The angle error after each rotation was less than 2.5°. 
-                            Meanwhile, the rotation axis of the robot may move 2-3cm. 
-                            Therefore, when the robot implements an on-axis turn in the middle of a 4x4m square, empty room, 
-                            the error of the map is roughly 2.5-3.5cm.
-                            
+
+                            <h3>Interactions</h3>
+                            <p>
+                                In the simulator, we can use mouse and keyboard to send commands. 
+                                Pressing the up and down arrow keys can increase and decrease the linear velocity of the virtual robot respectively, 
+                                while left and right arrow keys are used for changing angular velocity. 
+                                When angular velocity is positive, the virtual robot will rotate clockwise.
+                                By hitting spacebar, the robot will stop immediately. 
+                                The j/j/k/l keys are used to move the simulator view. 
+                                To zoom in/out, we can scroll the mouse wheel. 
+                                <p></p>
+                                In the plotter, we can press the bottons to show or hide the odometry, ground truth, belief, map and distributions. 
+                                Press the "A" button (bottom-left to the plotting box and above "Plotted Points"), the plot will auto-fit to window.
+                                
+                            </p>
+
+                            <h3>Commander Class</h3>
+                            <p>
+                                The Commander class allows to interact with the simulator and the plotter programmatically. Here are the functions. 
+                                <p><img class="img-fluid" src="assets/img/Lab10/commander.PNG"></p>
+                            </p>
+
                         </p>
 
-                        <h2 class="section-heading">Read out Distances</h2>
+
+                        <h2 class="section-heading">Open Loop Control</h2>
                         <p>
-                            Once the robot rotates to the set orientation, the TOF sensor will measure the distance from the front of the car to the obstacle. 
-                            I recorded 10 distance data and calculate the average. 
-                            A Bluetooth command 'GET_DISTANCE' is used to send the average distance from Artemis to the computer. 
-                            Here is the control program in jupyter notebook. 
-                            <p><img class="img-fluid" src="assets/img/Lab9/BLECommand.PNG"></p>
-
-                            <br>
-                            To see how accurate and repeatable the scan was, I did the rotations and measurements twice at the same position. 
-                            The actual roll angles were recorded together with the distances. 
-                            The polar plot below shows that the two scans are quite similar, especially when the obstacle is not so far away. 
-                            However, when the distance increases, the accuracy of the TOF sensor drops.
-                            Generally, the measurements matched up with what I expected.
-                            <p><img class="img-fluid" src="assets/img/Lab9/polar.jpg"></p>
-
-
+                            <strong>Task:</strong> Make the robot follow a set of velocity commands to execute a “square” loop anywhere in the map.
                             <p></p>
-                            I repeated the measurements in several marked locations and got the data below. 
-                            The robot always starts in the positive direction of the x-axis.  
-                            The unit of distance is mm.
-                            <p><img class="img-fluid" src="assets/img/Lab9/distances_v2.png"></p>
-
+                            I used <code>cmdr.set_vel(linear_vel, angular_vel)</code> to control the movement of the virtual robot. 
+                            The robot will go forward at the speed of 0.5 m/s for one second, 
+                            and then set the angular velocity to be 0.5*pi rad/s and last for anoter one second. 
+                            Repeat the above movements for four times, we can get a square in theory. 
+                            I also wrote a function <code>plot_pose()</code> to plot the odemtry and ground truth. 
+                            <p><img class="img-fluid" src="assets/img/Lab10/open loop code.PNG"></p>
+                            As shown in the figure below, the odometry is not accurate and the robot doesn't always execute the exact same shape. 
+                            With the open loop control, the square is not perfect. Therefore, closed loop control is necessary. 
+                            <p><img class="img-fluid" src="assets/img/Lab10/open trajectory.PNG"></p>
+                            Here is the demo.
+                            <div style="text-align: center;">
+                                <p><iframe width="600" height="400" src="https://www.youtube.com/embed/4gAivS24DQg" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></p>
+                            </div>
                             
                         </p>
 
-
-                        <h2 class="section-heading">Merge and Plot the readings</h2>
-                        <p>
-                            <h3>Transformation Matrix</h3>
-                            Given that the distances we obtained and the sensor position are in the robot position, we should change them into the global frame. 
-                            The schematic diagram and transformation matrix are shown below.
-                            <p><img class="img-fluid" src="assets/img/Lab9/matrix.PNG"></p>
-                            [px,py] is the coordinates of the center of the robot. theta is the angle between the two x-axes of the global frame and the local frame. 
-                            
-                            <p></p>
-
-                            <h3>Get Obstacle Positions</h3>
-                            <p><img class="img-fluid" src="assets/img/Lab9/car.jpg"></p>
-                            The robot frame is shown in the figure above. 
-                            The positive direction of the x-axis points to the front of the car, the y-axis is facing left, and the z-axis is perpendicular to the body up. 
-                            The distance between the TOF sensor and the center of the robot is nearly 7.5cm. 
-                            Thus, the sensor position in robot frame is [0.075,0] m. 
-                            <p></p>
-                            I creaetd a Matlab Script to caluculate the obstacle positions: 
-                            <p></p>
-                            <strong>First</strong>, we need to get the robot pose = [px,py,theta] according to the current marked location and robot orientation (global frame).<br> 
-                            <strong>Second</strong>, get the current sensor pose by changing it from robot frame to the inertial reference. 
-                            That is: sensorPoseGlobal = T_IB * sensorPoseRobot = T_IB * [0.075,0]. <br>
-                            <strong>Third</strong>, we can calulate the dx and dy by theta and distance. 
-                            And the obstacle position is going to be [x,y] = sensorPoseGlobal + [dx,dy].
-                            <p></p>
-                            Repeat the above steps for each orientation in each marked location, we can get a series of points indicating the position of obstacles. 
-                            <p><img class="img-fluid" src="assets/img/Lab9/scatter plot.jpg"></p>
-
-                            Here is the related code.
-                            <pre><code>
-sensorOriginR=[0.075,0];
-obstacles=[];
-for i=1:size(dataStore.robotPose,1)
-    for j=0:18
-       theta=-j*20*pi/180;
-       robotPose=[dataStore.robotPose(i,:)*0.305,theta] % unit: meter
-       distance=dataStore.distances(i,j+1)*0.001
-       
-       % sensor pose in the global frame
-       sensorOriginGlobal=robot2global(robotPose,sensorOriginR)
-       initangle=0;
-       angleGlobal=initangle+theta;
-       
-       dx=distance*cos(angleGlobal)
-       dy=distance*sin(angleGlobal)
-       x_obstacle=dx+sensorOriginGlobal(1)
-       y_obstacle=dy+sensorOriginGlobal(2)
-       
-       obstacles=[obstacles;x_obstacle,y_obstacle]
-    end
-        
-end
-                            </code></pre>
+                        <h2 class="section-heading">Closed Loop Control</h2>
 
                             
-                        </p>
 
-
-                        <h2 class="section-heading">Line-Based Map</h2>
-                        <p>
-                            To convert the map into a format we can use in the simulator, I manually estimated where the actual walls/obstacles were based on the scatter plot. 
-                            Here are the results: 
-                            <p><img class="img-fluid" src="assets/img/Lab9/mapping result.jpg"></p>
-                            The estimated walls and obstacles are generally consistent with the true ones. 
-                            But for small obstacles, due to the limited number of points, it will be more challenging to estimate. 
-                            We can scan at more locations, especially the areas around the obstacle, to solve this problem.  
-                           
-                                                        
-                        </p>
-                        
-
-
-
-
-        
-                       
                         
 
                         </p>
+
+                        
 
                         <span class="caption text-muted">
                             Posted by <a href="about.html">Lanyue Fang</a>
-                            on Apr 11, 2022
+                            on Apr 24, 2022
                         </span>
 
                         
