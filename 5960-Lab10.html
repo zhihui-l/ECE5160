@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
         <meta name="description" content="" />
         <meta name="author" content="" />
-        <title>Lab9 - Lanyue Fang's Fast Robots</title>
+        <title>Lab10 - Lanyue Fang's Fast Robots</title>
         <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
         <!-- Font Awesome icons (free version)-->
         <script src="https://use.fontawesome.com/releases/v5.15.4/js/all.js" crossorigin="anonymous"></script>
@@ -125,13 +125,50 @@
                         </p>
 
                         <h2 class="section-heading">Closed Loop Control</h2>
+                        <p>
+                            <strong>Task:</strong> Design a simple controller in your Jupyter notebook to perform a closed-loop obstacle avoidance.
+                            <p></p>
+                            There is a sensor in front of the virtual robot telling the distance to obstacles. 
+                            As shown in the code below, in the while loop, if the distance is less than 0.5 m, the robot will turn 45 degrees, 
+                            otherwise, it will go straight at a speed of 1 m/s. 
 
+                            <p><img class="img-fluid" src="assets/img/Lab10/close trajectory.PNG"></p>
+                            <div style="text-align: center;"><p>
+                                <iframe width="560" height="315" src="https://www.youtube.com/embed/sA6gY2rRq7U" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                            </p></div>      
+
+                            Then I added the forward speed. I tried 3 m/s and 5 m/s and found the chances of hitting the wall increased. 
+                            Meanwhile, although the threshold distance for turning was same, the virtual robot was likely to stop closer to the walls. 
                             
+                            <div style="text-align: center;"><p>
+                                <iframe width="560" height="315" src="https://www.youtube.com/embed/0P7MjL9VRKM" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                            </p></div>                    
+                                                       
+                            To make it go even faster, I implemented the PID control. 
+                            The forward speed is <code>(cmdr.get_sensor()-threshold)*KP)</code>, with threshold = 0.5, KP=10. 
+                            The distance threshold of the two videos above were same, but we can see that with the P control, 
+                            the virtual robot braked more promptly.
 
-                        
+                            <div style="text-align: center;"><p>
+                                <iframe width="560" height="315" src="https://www.youtube.com/embed/WJ0gtRyIgO0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                            </p></div> 
+                   
+                            From the previous tests, we can tell that the threshold distance should be larger with a higher speed. 
+                            For example, when the speed is five m/s, the threshold should be 0.5 m or even larger. 
+                            As for one m/s, 0.25 m is already enough. 
+
+                            <p></p>
+                            Given that the virtual robot is not a point robot and there is just one ToF sensor on the virtual robot, the obstacle avoidance code sometimes fails. 
+                            There are three major situations, as shown in the figure below: 
+                            (1) When the angle between the robot's forward direction and wall angle is very small, the left or right side of the robot may hit the wall. 
+                            (2) When there is another obstacle in the way, but the ToF sensor doesn't detect it. 
+                            (3) When rotating, the robot hits the wall.
+                            To minimize crashes, we can attach two ToF sensors on the left and right front or use a depth sensor with a large field of view. 
+                            <p><img class="img-fluid" src="assets/img/Lab10/collision.png"></p>
+
 
                         </p>
-
+                        
                         
 
                         <span class="caption text-muted">
