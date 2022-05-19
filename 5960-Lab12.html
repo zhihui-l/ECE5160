@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <meta name="description" content="" />
+        <meta name="author" content="" />
+        <title>Lab12 - Lanyue Fang's Fast Robots</title>
+        <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
+        <!-- Font Awesome icons (free version)-->
+        <script src="https://use.fontawesome.com/releases/v5.15.4/js/all.js" crossorigin="anonymous"></script>
+        <!-- Google fonts-->
+        <link href="https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic" rel="stylesheet" type="text/css" />
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" rel="stylesheet" type="text/css" />
+        <!-- Core theme CSS (includes Bootstrap)-->
+        <link href="css/styles.css" rel="stylesheet" />
+    </head>
+    <body>
+        <!-- Navigation-->
+        <nav class="navbar navbar-expand-lg navbar-light" id="mainNav">
+            <div class="container px-4 px-lg-5">
+                <a class="navbar-brand" href="index.html">ECE5960 FAST ROBOTS</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+                    Menu
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarResponsive">
+                    <ul class="navbar-nav ms-auto py-4 py-lg-0">
+                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="index.html">Home</a></li>
+                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="about.html">About Me</a></li>
+                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="5960-Lab11.html">Previous</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+        <!-- Page Header-->
+        <header class="masthead" style="background-image: url('assets/img/Lab12/trajectory_sim.PNG')">
+            <div class="container position-relative px-4 px-lg-5">
+                <div class="row gx-4 gx-lg-5 justify-content-center">
+                    <div class="col-md-10 col-lg-8 col-xl-7">
+                        <div class="post-heading">
+                            <h1>Lab12 Localization on the real robot</h1>
+                            <h2 class="subheading">Implement grid localization on the actual robot.</h2>
+                            <p class="post-meta">
+                                
+                                Collaboration: Ruohan Liu(rl592)<br>
+                                Posted by
+                                Lanyue Fang
+                                on May 2, 2022
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+        <!-- Post Content-->
+        <article class="mb-4">
+            <div class="container px-4 px-lg-5">
+                <div class="row gx-4 gx-lg-5 justify-content-center">
+                    <div class="col-md-10 col-lg-8 col-xl-7">
+
+                        <h2 class="section-heading">Localization in Simulation</h2>
+                        <p>
+                            The figure below shows the navigation and localization result in the simulator. 
+                            Red, green, and blue lines stand for the trajectories of odom, ground truth and Bayes Filter belief respectively. 
+                            We can tell that the Bayes filter results are close to the ground truth. 
+                            <p><img class="img-fluid" src="assets/img/Lab12/trajectory_sim.PNG"></p>
+                            
+                        </p>
+
+                        <h2 class="section-heading">Localization in real robot</h2>
+                        <p>        
+                            We were going to localize the robot in different marked poses, and there was no movement between them.
+                            Thus, we could use a uniform prior to the pose and just run the update step using the sensor measurement data. 
+
+                        </p>
+
+
+                        <h3>Perform Observation Loop</h3>
+                        To get the observation data, the robot needs to turn 360 degrees in place 
+                        while collecting ToF sensor readings every 20 degrees. 
+                        We implemented a PID orientation controller created in Lab6 to make the robot rotate precisely. 
+                        Then, like Lab9, we ran a Bluetooth command 'GET_DISTANCE' after the rotation, 
+                        which was used to send the average distance from Artemis to the computer. 
+                        Sensor position, [0.075,0] m, was also considered.
+                        Here is the related code.
+                        <p></p>
+                        <pre>
+def perform_observation_loop(self, rot_vel=120):
+"""Perform the observation loop behavior on the real robot, where the robot does  
+a 360 degree turn in place while collecting equidistant (in the angular space) sensor
+readings, with the first sensor reading taken at the robot's current heading. 
+The number of sensor readings depends on "observations_count"(=18) defined in world.yaml.
+
+Keyword arguments:
+rot_vel -- (Optional) Angular Velocity for loop (degrees/second)
+            Do not remove this parameter from the function definition, even if you don't use it.
+Returns:
+sensor_ranges   -- A column numpy array of the range values (meters)
+sensor_bearings -- A column numpy array of the bearings at which the sensor readings were taken (degrees)
+                    The bearing values are not used in the Localization module, so you may return a empty numpy array
+"""
+ble.send_command(CMD.SEND_GOAL, "0")
+ble.send_command(CMD.BEGIN, "")
+
+observations_count=robot.config_params["mapper"]["observations_count"] # 18
+
+sensor_ranges=np.zeros([observations_count,1])
+sensor_bearings=np.zeros([observations_count,1])
+
+SETPOINT=0
+interval=360/observations_count # 20
+for i in range(observations_count):
+sensor_bearings[i][0]=SETPOINT
+ble.send_command(CMD.SEND_GOAL, str(SETPOINT))
+await asyncio.sleep(1)
+ble.send_command(CMD.GET_DISTANCE, "")
+await asyncio.sleep(1)
+temp=float(ble.receive_string(ble.uuid['RX_STRING']))*0.001
+sensor_ranges[i][0]=temp+0.075
+print(SETPOINT,':',temp)
+SETPOINT=SETPOINT-interval; # CCW
+
+ble.send_command(CMD.STOP, "")
+
+return sensor_ranges,sensor_bearings*-1
+                        </pre>
+
+                            
+
+                        <p></p>
+
+
+                        <h3>Demo</h3>
+                        <p>
+                            <div style="text-align: center;">
+                                <iframe width="560" height="315" src="https://www.youtube.com/embed/lQ84qSiUiyA" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                            </div>        
+                        </p>
+
+
+
+
+                        <h3>Results</h3>
+                        There are four marked poses:(1) -3 ft, -2 ft , 0 deg; (2) 0 ft, 3 ft, 0 deg; (3) 5 ft, -3 ft, 0 deg; (4) 5 ft, 3 ft, 0 deg. 
+                        I placed the robot in those marked poses, ran the update step of the Bayes filter, and got the following results. 
+                        The green dots represent ground truth, while the blue ones are belief.
+                        <img class="img-fluid" src="assets/img/Lab12/results.png">
+
+                        <p></p>
+                        Table. Localization Results (unit: meter, meter, degree)
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">Truth</th>
+                                <th scope="col">Belief</th>
+                                <th scope="col">Error</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                <th scope="row">1</th>
+                                <td>(-0.914, -0.610, 0)</td>
+                                <td>(-0.914, -0.610, -10)</td>
+                                <td>(0, 0, 10)</td>
+                                </tr>
+                                <tr>
+                                <th scope="row">2</th>
+                                <td>(0, 0.914, 0)</td>
+                                <td>(0, 0.914, -10)</td>
+                                <td>(0, 0, 10)</td>
+                                </tr>
+                                <tr>
+                                <th scope="row">3</th>
+                                <td>(1.524, -0.914, 0)</td>
+                                <td>(1.219, -0.914, -10)</td>
+                                <td>(0.305, 0, 10)</td>
+                                </tr>
+                                <tr>
+                                <th scope="row">4</th>
+                                <td>(1.524, 0.914, 0)</td>
+                                <td>(1.829, 0.914, -10)</td>
+                                <td>(-0.305, 0, 10)</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <p></p>
+
+
+                        <h3>Discusssion</h3>
+                        There was a 10-degree error in theta for every pose. 
+                        The reason was that we were using grid localization and the size of each grid cell along the theta axis was 20 degrees.
+                        The angles in the interval [0,-20] would be expressed as -10 degrees. Thus such error is unavoidable. 
+                        There was no error in the x and y axes for the first two poses, and the beliefs and ground truths overlap in the plots.
+                        However, the last two poses had a one-grid error on the x-axis. 
+                        Considering the error in orientations and noise in ToF readings, I thought it was acceptable. 
+                        To improve the performance, we can increase the grid resolution.
+
+
+
+
+
+                        
+ 
+                          
+
+
+
+                    
+
+
+
+                 
+                        <span class="caption text-muted">
+                            Posted by <a href="about.html">Lanyue Fang</a>
+                            on May 2, 2022
+                        </span>
+
+                        
+                       
+
+
+                    </div>
+                </div>
+            </div>
+        </article>
+        <!-- Footer-->
+        <footer class="border-top">
+            <div class="container px-4 px-lg-5">
+                <div class="row gx-4 gx-lg-5 justify-content-center">
+                    <div class="col-md-10 col-lg-8 col-xl-7">
+                        <div class="small text-center text-muted fst-italic">Copyright &copy; Lanyue Fang 2022</div>
+                    </div>
+                </div>
+            </div>
+        </footer>
+        <!-- Bootstrap core JS-->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+        <!-- Core theme JS-->
+        <script src="js/scripts.js"></script>
+    </body>
+</html>
