@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <meta name="description" content="" />
+        <meta name="author" content="" />
+        <title>Lab13 - Lanyue Fang's Fast Robots</title>
+        <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
+        <!-- Font Awesome icons (free version)-->
+        <script src="https://use.fontawesome.com/releases/v5.15.4/js/all.js" crossorigin="anonymous"></script>
+        <!-- Google fonts-->
+        <link href="https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic" rel="stylesheet" type="text/css" />
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" rel="stylesheet" type="text/css" />
+        <!-- Core theme CSS (includes Bootstrap)-->
+        <link href="css/styles.css" rel="stylesheet" />
+    </head>
+    <body>
+        <!-- Navigation-->
+        <nav class="navbar navbar-expand-lg navbar-light" id="mainNav">
+            <div class="container px-4 px-lg-5">
+                <a class="navbar-brand" href="index.html">ECE5960 FAST ROBOTS</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+                    Menu
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarResponsive">
+                    <ul class="navbar-nav ms-auto py-4 py-lg-0">
+                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="index.html">Home</a></li>
+                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="about.html">About Me</a></li>
+                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="5960-Lab12.html">Previous</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+        <!-- Page Header-->
+        <header class="masthead" style="background-image: url('assets/img/Lab13/roadmap2.PNG')">
+            <div class="container position-relative px-4 px-lg-5">
+                <div class="row gx-4 gx-lg-5 justify-content-center">
+                    <div class="col-md-10 col-lg-8 col-xl-7">
+                        <div class="post-heading">
+                            <h1>Lab13 Planning and execution</h1>
+                            <h2 class="subheading">Implement path planning and navigation on the actual robot.</h2>
+                            <p class="post-meta">
+                                
+                                Collaboration: Ruohan Liu(rl592)<br>
+                                Posted by
+                                Lanyue Fang
+                                on May 19, 2022
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+        <!-- Post Content-->
+        <article class="mb-4">
+            <div class="container px-4 px-lg-5">
+                <div class="row gx-4 gx-lg-5 justify-content-center">
+                    <div class="col-md-10 col-lg-8 col-xl-7">
+
+                        <h2 class="section-heading">Navigation to Waypoints</h2>
+                        <p>
+                            <strong>Overall Strategy:</strong> Given waypoints, implement a closed-loop control on the real robot to make it navigate to all waypoints. 
+                            During the process, the robot is able to compute the motion controls and execute them accurately. 
+                            <p></p>
+
+                            <strong>Solution:</strong><br>
+                            ●   Put the robot on the start point, and input the list of waypoints<br>
+                            ●   Initilize the goal to be the first waypoint<br>
+                            ●   In the while loop:<br>
+                            <strong>First,</strong> calculate the position error. If the current position is close enough to the goal, change the goal to be the next waypoint and navigate to it. <br>
+                            <strong>Second,</strong> given current pose and goal, compute controls: rot1, trans, rot2.<br>
+                            <strong>Third,</strong> implement rotation and translation by sending BLE commands.<br>
+                            <strong>Forth,</strong> get current localization by an update step.<br>
+                            <strong>Break</strong> when robot visit all waypoints. Otherwise, go back to 'first'. <br>
+                            <p></p>
+                            
+                            <strong>Navigate Program</strong>
+                            <img class="img-fluid" src="assets/img/Lab13/navigate.PNG">
+                            
+                            <p></p>
+                            I will introduce the functions and implementation of each module in detail below.
+                            <p></p>
+                            
+                            <h3>Localization</h3>
+                            According to the <a href="5960-Lab12.html">Lab12</a>, we could use a uniform prior to the pose and just run the update step using the sensor measurement data to localize it. 
+                            The error was less than one grid along the x and y axes and 10 degrees in theta in most cases, which was acceptable. 
+                            Hence, we decided to, like Lab12, just implement the update step for localization and only consider the error along the x and y axes. 
+                            As for the close enough threshold, we set it to be 0.432 meters. 
+                            That is, if the robot's current position is within the nine neighborhood grids of the goal, 
+                            we will regard it as close enough to the waypoint and change the goal to be the next waypoint. 
+                            <p></p>
+                            We wrote a function named <code>get_cur_pose()</code> to the localization part. 
+                            It firstly run the <code>get_observation_data()</code> wrote in Lab12, and excute the update step. 
+                            The current pose is the one with the highest belief. 
+
+                            <p><img class="img-fluid" src="assets/img/Lab13/get cur pose.png"></p>
+
+                            
+
+                            <h3>Compute Control</h3>
+                            Given the goal pose and the current pose, the robot is going to calculate the motions by itself. 
+                            We used the <code>compute_control()</code> function wrote in <a href="5960-Lab11.html">Lab11</a> to achieve this. 
+                            The motion model can be described as rotation1, translation, and rotation2. 
+                            Here is the related code.
+                            <p><img class="img-fluid" src="assets/img/Lab13/compute control.PNG"></p>
+
+
+                            
+                            
+                            <h3>Motion: Rotation</h3>
+                            With a PID orientation controller, we can rotate the robot to the set angle precisely. 
+                            Here, we just used P and D control, with <code>KP = 1</code>, <code>KD = 0.1</code>. 
+                            For more information, such as how motor input changes, you can view <a href="5960-Lab6.html">Lab6</a>. 
+                            In the video below, the robot rotated 20° each time accurately. 
+                            <p>
+                                <div style="text-align: center;">
+                                    <iframe width="560" height="315" src="https://www.youtube.com/embed/SbecxstmB6U" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                                </div>
+                            </p>
+
+                            As for the rotation control, we can send the setpoint to Artemis by BLE command <code>SEND_SETPOINT</code>, 
+                            and the robot will then do the motion accordingly. 
+                            Here is the related code. 
+                            <p><img class="img-fluid" src="assets/img/Lab13/rotation.PNG"></p>
+
+
+                            
+
+                            <h3>Motion: Translation</h3>
+                            To achieve the translation successfully, we used a distance controller. 
+                            Similar to orientation controller, we implemented the P and D control, with <code>KP = 0.022</code>, <code>KD = 0.012</code>. 
+                            The <a href="https://rl592.github.io/ECE5960/">Lab6</a> shows how we designed the controller. 
+                            <p></p>
+                            In the video below, we set the stop distance to be 30 cm, 
+                            and the robot stoped when it was exactly 30 cm away from the wall using feedback from the ToF sensor.
+                            <p>
+                                <div style="text-align: center;">
+                                    <iframe width="560" height="315" src="https://www.youtube.com/embed/xxR6yPIv-3U" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                                </div>
+                            </p>
+                            We created a function named <code>translation()</code>, which firstly get the current distance to the obstacle ahead by ToF sensor, 
+                            then calculate the <code> stop_distance = cur_distance - translation</code> and send it to Artemis, 
+                            and the robot move forward accordingly. 
+                            Here is the related code. 
+                            <p><img class="img-fluid" src="assets/img/Lab13/translation.PNG"></p>
+
+                            <h3>Demo</h3>
+                            With the functions above, we can implement navigation. 
+                            The localization is likely to be wrong for the first point, (-4, -3) feet 
+                            , since it is too far away from the upper left obstacles, and the ToF sensor gets wildly inaccurate readings. 
+                            Take the distance when theta is 45° as an example. The actual length is 3 m, while the measured distance is in the range [2.7,3.4] m 
+                            and different at each measurement. 
+                            Although we have used the average of ten distance measurements, it does not help much to locate at this point. 
+                            Hence, we decided to give up this point and start from the second waypoint. 
+                            <p></p>
+
+                            Here is the demo and plots.
+                            <div style="text-align: center;">
+                                <iframe width="560" height="315" src="https://www.youtube.com/embed/-u4qHCvaJsU" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                            </div>
+                            
+                            <p><img class="img-fluid" src="assets/img/Lab13/plots.png"></p>
+
+                            The figures above show that all but the last waypoints were reached with only one motion combination - rotation1 and translation.
+                            The last point missed is due to the error in ToF sensor readings. 
+                            It estimeted the cur_pose, (-0.305m, 0.610m, -170°), and calculated the motions, (rot_1 = 106.5°, trans = 0.6815m, rot_2: 63.4349°), correctly. 
+                            However, the distance measured was only 1.668 m, while the actual value is nearly 2.6m, thus resulting in moving too far away. 
+                            Fortunately, after the localization, the robot found it was in the wrong place and went back to the final waypoint. 
+                            <p></p>
+                            Comparing the Belief and Actual Trajectory, we can tell that the localization is not perfect, usually one grid error along the x and y axes. 
+                            We can add the prediction step to improve this, but it will take a longer time.
+
+                            <p></p>
+
+                            For more information, please check the <a href="assets/img/Lab13/Logging Info.pdf">Logging Document</a>.
+                            
+                        </p>
+
+
+                        <h2 class="section-heading">Path Planning</h2>
+                        <p>
+                            <strong>Overall Strategy:</strong> Create a roadmap, whose nodes are the given waypoints and 
+                            the egdes are the connection between any two nodes that don't pass through the obstacle. 
+                            Input the start point and the end point, and the output is the shorest path represented by nodes using dijkstra's algorithm. 
+                            <p></p>
+                            We created a class named <code>Graph</code> to create the roadmap, shown in the figure below.
+                            <p><img class="img-fluid" src="assets/img/Lab13/roadmap2.png"></p>
+
+                            Here is the related code. 
+                            <img class="img-fluid" src="assets/img/Lab13/graph.PNG">
+                            <p></p>
+                            <!-- <code>minDistance()</code> -->
+
+
+
+                            The below demo shows the shorest paths with different input start and end nodes.
+                            <p>
+                                <div style="text-align: center;">
+                                    <iframe width="560" height="315" src="https://www.youtube.com/embed/FDdNhvlWqL8" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                                </div>
+                            </p>
+
+
+                            In the demo below, I chose the start node to be #1 and the end node to be #6. 
+                            The shorest path is: <br>
+                            1: (-2, -1) --> 7: (5, 3) --> 6: (5, -2). (unit: feet)
+                            <p></p>
+                            By inputting those points into the <code>navigation()</code>, the robot was able to navigate to node #6 with shorest path.
+                            <p>
+                                <div style="text-align: center;">
+                                    <iframe width="560" height="315" src="https://www.youtube.com/embed/wNc-2t9hibM" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                                </div>
+                            </p>
+                            
+
+
+
+
+
+
+                        </p>
+
+
+
+
+
+                        
+ 
+                          
+
+
+
+                    
+
+
+
+                 
+                        <span class="caption text-muted">
+                            Posted by <a href="about.html">Lanyue Fang</a>
+                            on May 19, 2022
+                        </span>
+
+                        
+                       
+
+
+                    </div>
+                </div>
+            </div>
+        </article>
+        <!-- Footer-->
+        <footer class="border-top">
+            <div class="container px-4 px-lg-5">
+                <div class="row gx-4 gx-lg-5 justify-content-center">
+                    <div class="col-md-10 col-lg-8 col-xl-7">
+                        <div class="small text-center text-muted fst-italic">Copyright &copy; Lanyue Fang 2022</div>
+                    </div>
+                </div>
+            </div>
+        </footer>
+        <!-- Bootstrap core JS-->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+        <!-- Core theme JS-->
+        <script src="js/scripts.js"></script>
+    </body>
+</html>
