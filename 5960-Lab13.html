@@ -186,14 +186,20 @@
                             Input the start point and the end point, and the output is the shorest path represented by nodes using dijkstra's algorithm. 
                             <p></p>
                             We created a class named <code>Graph</code> to create the roadmap, shown in the figure below.
-                            <p><img class="img-fluid" src="assets/img/Lab13/roadmap2.png"></p>
+                            <p><img class="img-fluid" src="assets/img/Lab13/roadmap2.PNG"></p>
 
                             Here is the related code. 
                             <img class="img-fluid" src="assets/img/Lab13/graph.PNG">
                             <p></p>
-                            <!-- <code>minDistance()</code> -->
+                            <code>minDistance()</code>: pick the unvisited vertex with the lowest distance<br>
+                            <code>findpath()</code>: find the path given the destination<br>
+                            <code>getpath()</code>: return the path<br>
+                            <code>dijkstra()</code>: use Dijkstra's algorithm to find the shortest path between a and b. 
+                            It picks the unvisited vertex with the lowest 
+                            distance, calculates the distance through it to each unvisited neighbor, and updates the neighbor's distance if smaller.
+                            <br>
 
-
+                            <p>
 
                             The below demo shows the shorest paths with different input start and end nodes.
                             <p>
@@ -213,11 +219,6 @@
                                     <iframe width="560" height="315" src="https://www.youtube.com/embed/wNc-2t9hibM" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
                                 </div>
                             </p>
-                            
-
-
-
-
 
 
                         </p>
