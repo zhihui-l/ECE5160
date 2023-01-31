@@ -19,7 +19,7 @@
         <!-- Navigation-->
         <nav class="navbar navbar-expand-lg navbar-light" id="mainNav">
             <div class="container px-4 px-lg-5">
-                <a class="navbar-brand" href="index.html">ECE5960 FAST ROBOTS</a>
+                <a class="navbar-brand" href="index.html">ECE5160 FAST ROBOTS</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
                     Menu
                     <i class="fas fa-bars"></i>
@@ -27,8 +27,8 @@
                 <div class="collapse navbar-collapse" id="navbarResponsive">
                     <ul class="navbar-nav ms-auto py-4 py-lg-0">
                         <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="index.html">Home</a></li>
-                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="about.html">About Me</a></li>
-                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="5960-Lab1.html">Latest Update</a></li>
+                        <!-- <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="about.html">About Me</a></li>
+                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="5960-Lab1.html">Latest Update</a></li> -->
                     </ul>
                 </div>
             </div>
@@ -43,8 +43,8 @@
                             <h2 class="subheading">Setup and become familiar with the Arduino IDE and the Artemis board.</h2>
                             <p class="post-meta">
                                 Posted by
-                                <a href="about.html">Lanyue Fang</a>
-                                on Jan 31, 2022
+                                <a href="about.html">Zhihui Liu</a>
+                                on Jan 31, 2023
                             </p>
                         </div>
                     </div>
@@ -58,70 +58,55 @@
                     <div class="col-md-9 col-lg-9 col-xl-9">  
                         <h2 class="section-heading">Part1: Blink it up</h2>
                         <p>
-                            After the installation of the latest version of Arduino IDE and the Arduino core for Apollo3, I hooked the Artemis board up to the laptop and uploaded the 'Blink' example.
-                            I encountered the problem of "serial port not selected" for the first time.
-                            After making sure the port number connecting to the Artemis and selecting it in the 'Tools->Port', I successfully uploaded the example.
-                            The 'Blink' example initializes digital pin LED_BUILTIN as an output and then repeatedly turns an LED on for one second, then off for one second.
-                            Here is the demo video.
+                            The first part is straightforward. I followed the provided instruction, downloaded Arduino IDE, connected the Artemis board to the laptop via Type-C cable and ran the example code "Blink". As a result, the LED blinked at 1 Hz. 
                         </p>
                         <div style="text-align: center;">
-                            <iframe width="560" height="315" src="https://www.youtube.com/embed/q7K2PUsbdGU" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                            <iframe width="560" height="315" src="https://www.youtube.com/embed/OOKZ8o5YZZ4" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
                         </div>
 
                         <h2 class="section-heading">Part2: Serial Port</h2>
                         <p>
-                            'Serial' is a built-in example of Artemis, in which if you send a number to the board it will echo back.
-                            By opening the Serial Monitor, we can see the results.
-                            Here is the demo video, in which I send the number ‘5960’ separately.
+                            After uploading the example code "Serial" and opening the serial monitor, the board can read from the input and echo that to the laptop.
                         </p>
                         <div style="text-align: center;">
-                            <iframe width="560" height="315" src="https://www.youtube.com/embed/MNi_9TE0TtM" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                            <iframe width="560" height="315" src="https://www.youtube.com/embed/gJVfSicdtYY" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
                         </div>
 
                         <h2 class="section-heading">Part3: Analog Read</h2>
                         <p>
-                            Artemis has some internal ADC channels to measure the differential pairs, internal die temperature, VCC, and VSS voltage.
-                            This example focuses on the temperature change.
-                            As shown in the video, the temperature counts are around 33100 at the very beginning. 
-                            After I put the chip near the heater, the counts were going higher and higher, up to 36000 counts in 20 sec.
+                            Firstly, I uploaded the example code "AnalogRead" and opened the serial monitor. At the beginning, the temperature was normal and the reading was around 32500. After pressing the temperature sensor for nearly one minute, the reading became around 32800.
                         </p>
                         <div style="text-align: center;">
-                            <iframe width="560" height="315" src="https://www.youtube.com/embed/QX_XLL3ak7I" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                            <iframe width="560" height="315" src="https://www.youtube.com/embed/MhFgg4KIBP0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
                         </div>
 
                         <h2 class="section-heading">Part4: Microphone Output</h2>
                         <p>
-                            This example demonstrates how to use the pulse density microphone (PDM) on Artemis boards. 
-                            The Serial will feedback the real-time loudest frequency.
-                            In the following demo, I used a piano scale to play a scale and the loudest frequency changed with it.     
+                            In this part, the highest frequency of the sound were output to the serial monitor. Initially the frequency was around 500 Hz. This figure then rose up to around 3000 when whistling.
                         </p>
                         <div style="text-align: center;">
-                            <iframe width="560" height="315" src="https://www.youtube.com/embed/0ZLJTWM_H3s" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                            <iframe width="560" height="315" src="https://www.youtube.com/embed/qcb48blgsms" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
                         </div>
 
-                        <h2 class="section-heading">Additional Task: Voice-activated LED</h2>
+                        <h2 class="section-heading">Additional Task: "A" Note Detection</h2>
                         <p>
-                            A Voice-activated LED will be able to light up when you speak or whistle, and off otherwise. 
-                            To achieve this, I edited a program based on the 'MicrophoneOutput'.
-                            In the 'setup()', I added the following line to initialize digital pin LED_BUILTIN as an output.<br>
+                            To turn the LED on when "A" note (440 Hz) is played and off otherwise, I edited the code from the last example "MicrophoneOutput":
+                            <br><br>1. In the 'setup()', I initialized the pin LED_BUILTIN as an output.<br>
                             <code>
                               pinMode(LED_BUILTIN, OUTPUT);
-                            </code><br>
-                            As for the loop part, I added a judgement statement in the <code>printLoudest()</code> function.
-                            When the loudest frequency is larger than 500, it can be regarded as voice or whistle and the LED will be on.<br>
+                            </code><br><br>
+                            2. In the <code>printLoudest()</code> function in the loop, I changed the 'if' statement.<br>
                             <code>
-                              if(ui32LoudestFrequency>500){<br>
-                                Serial.printf("LED ON\n");<br>
+                              if(ui32LoudestFrequency>430 && ui32LoudestFrequency<450){<br>
                                 digitalWrite(LED_BUILTIN, HIGH);<br>
                               }<br>
                               else{<br>
-                                Serial.printf("LED OFF\n");<br>
                                 digitalWrite(LED_BUILTIN, LOW);<br>
-                            </code>
-                            Given that I can't whistle, I said the letter 'A' instead in the attached demo video.                       
+                              }<br>
+                            </code>                      
                         </p>
                         <div style="text-align: center;">
-                            <iframe width="560" height="315" src="https://www.youtube.com/embed/F-cksxd6Cv0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                            <iframe width="560" height="315" src="https://www.youtube.com/embed/AAQoNMQwaNc" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
                         </div>
 
                         <h2 class="section-heading">Reference</h2>
